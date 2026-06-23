@@ -8,15 +8,15 @@
     --foreground: 0 0% 4%;
     --card: 0 0% 100%;
     --card-foreground: 0 0% 4%;
-    --primary: 352 100% 45%;
+    --primary: 352 100% 40%;
     --primary-foreground: 0 0% 100%;
     --secondary: 0 0% 10%;
     --secondary-foreground: 0 0% 100%;
-    --muted: 0 0% 96%;
+    --muted: 30 10% 95%;
     --muted-foreground: 0 0% 45%;
-    --border: 0 0% 90%;
-    --input: 0 0% 90%;
-    --ring: 352 100% 45%;
+    --border: 30 8% 90%;
+    --input: 30 8% 90%;
+    --ring: 352 100% 40%;
     --radius: 0.5rem;
   }
 }
@@ -32,4 +32,15 @@
 
 [dir="ltr"] body {
   font-family: var(--font-inter), system-ui, sans-serif;
+}
+
+.btn-red-glow {
+  transition: background-color 0.15s ease, box-shadow 0.2s ease;
+}
+.btn-red-glow:not(:disabled):hover {
+  box-shadow: 0 0 28px rgba(229, 0, 26, 0.35), 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+.btn-red-glow:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(229, 0, 26, 0.5);
 }
