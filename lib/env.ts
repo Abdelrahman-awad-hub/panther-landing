@@ -1,8 +1,6 @@
 export const env = {
   sellerPortalUrl: process.env.NEXT_PUBLIC_SELLER_PORTAL_URL ?? '#',
   panther: {
-    apiUser: process.env.PANTHER_API_USER ?? '',
-    apiPassword: process.env.PANTHER_API_PASSWORD ?? '',
     apiBaseUrl: process.env.PANTHER_API_BASE_URL || 'https://panther-express.top',
   },
   google: {
