@@ -8,7 +8,7 @@ import { Menu, X } from 'lucide-react'
 import { Logo } from '@/components/ui/Logo'
 import { Button } from '@/components/ui/button'
 
-const NAV_SECTIONS = ['services', 'about', 'clients', 'branches', 'partners'] as const
+const NAV_SECTIONS = ['services', 'about', 'clients', 'branches'] as const
 
 interface HeaderProps {
   sellerPortalUrl: string
