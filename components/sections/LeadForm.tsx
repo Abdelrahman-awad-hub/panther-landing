@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { useTranslations, useLocale } from 'next-intl'
+import { sendGTMEvent } from '@next/third-parties/google'
 import { CheckCircle2, AlertCircle, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -62,6 +63,14 @@ export function LeadFormSection() {
     defaultValues: { brandName: '', phone: '', volumeCategory: '', socialLink: '', websiteUrl: '' },
   })
 
+  // Fire a single `form_start` event the first time the user interacts with any field.
+  const startedRef = useRef(false)
+  const handleFormStart = () => {
+    if (startedRef.current) return
+    startedRef.current = true
+    sendGTMEvent({ event: 'form_start', form_name: 'contact' })
+  }
+
   const onSubmit = async (values: FormData) => {
     if (honeypot) return
     try {
@@ -72,7 +81,7 @@ export function LeadFormSection() {
       })
       if (!res.ok) throw new Error()
       setStatus('success')
-      window.dataLayer?.push({ event: 'form_submit', form_name: 'contact' })
+      sendGTMEvent({ event: 'form_submit', form_name: 'contact' })
     } catch {
       setStatus('error')
     }
@@ -166,6 +175,7 @@ export function LeadFormSection() {
           <div className="lg:col-span-3">
             <form
               onSubmit={handleSubmit(onSubmit)}
+              onInput={handleFormStart}
               dir={isAr ? 'rtl' : 'ltr'}
               className="bg-white rounded-2xl border border-gray-200 overflow-hidden"
               style={{
