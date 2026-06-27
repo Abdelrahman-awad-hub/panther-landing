@@ -1,15 +1,13 @@
 'use client'
 
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Zap, ArrowRight } from 'lucide-react'
 
-interface HeroSectionProps {
-  sellerPortalUrl: string
-}
-
-export function HeroSection({ sellerPortalUrl }: HeroSectionProps) {
+export function HeroSection() {
   const t = useTranslations('hero')
+  const locale = useLocale()
 
   return (
     <section className="relative min-h-screen bg-panther-black flex items-center overflow-hidden pt-16 lg:pt-20">
@@ -55,13 +53,13 @@ export function HeroSection({ sellerPortalUrl }: HeroSectionProps) {
                 <ArrowRight size={18} className="ms-2 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 rtl:rotate-180 transition-transform" />
               </Button>
             </a>
-            <a href={sellerPortalUrl} target="_blank" rel="noopener noreferrer"
-              onClick={() => window.dataLayer?.push({ event: 'cta_click', cta_name: 'seller_login', cta_location: 'hero' })}>
+            <Link href={`/${locale}/track`}
+              onClick={() => window.dataLayer?.push({ event: 'cta_click', cta_name: 'track_order', cta_location: 'hero' })}>
               <Button size="lg" variant="outline"
                 className="border-white/25 text-white hover:bg-white/10 hover:text-white bg-transparent font-medium px-8 text-base w-full sm:w-auto">
                 {t('ctaSecondary')}
               </Button>
-            </a>
+            </Link>
           </div>
 
           {/* Stats row */}

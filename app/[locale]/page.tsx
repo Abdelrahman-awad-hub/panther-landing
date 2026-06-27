@@ -16,7 +16,7 @@ export default function HomePage() {
     <>
       <Header sellerPortalUrl={sellerPortalUrl} />
       <main>
-        <HeroSection sellerPortalUrl={sellerPortalUrl} />
+        <HeroSection />
         <AboutSection />
         <ServicesSection />
         <ClientsSection />

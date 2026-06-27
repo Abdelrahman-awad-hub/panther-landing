@@ -44,11 +44,15 @@ export function Header({ sellerPortalUrl }: HeaderProps) {
           {/* Desktop nav */}
           <nav className="hidden lg:flex items-center gap-7">
             {NAV_SECTIONS.map((s) => (
-              <a key={s} href={`#${s}`}
+              <a key={s} href={`/${locale}#${s}`}
                 className="text-sm font-medium text-gray-500 hover:text-panther-black transition-colors">
                 {t(s)}
               </a>
             ))}
+            <Link href={`/${locale}/track`}
+              className="text-sm font-medium text-gray-500 hover:text-panther-black transition-colors">
+              {t('track')}
+            </Link>
           </nav>
 
           {/* Desktop CTAs */}
@@ -64,7 +68,7 @@ export function Header({ sellerPortalUrl }: HeaderProps) {
                 {t('sellerLogin')}
               </Button>
             </a>
-            <a href="#join"
+            <a href={`/${locale}#join`}
               onClick={() => window.dataLayer?.push({ event: 'cta_click', cta_name: 'join_now', cta_location: 'header' })}>
               <Button size="sm" className="bg-panther-red hover:bg-panther-red-dark text-white h-9 px-5 text-sm font-semibold">
                 {t('becomeASeller')}
@@ -86,11 +90,15 @@ export function Header({ sellerPortalUrl }: HeaderProps) {
         <div className="lg:hidden bg-white border-t border-gray-100 shadow-lg">
           <div className="px-4 py-5 flex flex-col gap-1">
             {NAV_SECTIONS.map((s) => (
-              <a key={s} href={`#${s}`} onClick={() => setOpen(false)}
+              <a key={s} href={`/${locale}#${s}`} onClick={() => setOpen(false)}
                 className="text-gray-600 hover:text-panther-black py-2.5 text-base border-b border-gray-100 last:border-0 transition-colors">
                 {t(s)}
               </a>
             ))}
+            <Link href={`/${locale}/track`} onClick={() => setOpen(false)}
+              className="text-gray-600 hover:text-panther-black py-2.5 text-base border-b border-gray-100 last:border-0 transition-colors">
+              {t('track')}
+            </Link>
             <div className="pt-4 flex flex-col gap-2.5">
               <Link href={switchPath} className="text-gray-400 hover:text-panther-black text-sm transition-colors">
                 {otherLocale === 'ar' ? 'العربية' : 'English'}
@@ -101,7 +109,7 @@ export function Header({ sellerPortalUrl }: HeaderProps) {
                   {t('sellerLogin')}
                 </Button>
               </a>
-              <a href="#join" onClick={() => { setOpen(false); window.dataLayer?.push({ event: 'cta_click', cta_name: 'join_now', cta_location: 'header' }) }}>
+              <a href={`/${locale}#join`} onClick={() => { setOpen(false); window.dataLayer?.push({ event: 'cta_click', cta_name: 'join_now', cta_location: 'header' }) }}>
                 <Button className="w-full bg-panther-red hover:bg-panther-red-dark text-white font-semibold">
                   {t('becomeASeller')}
                 </Button>

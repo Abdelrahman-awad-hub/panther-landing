@@ -7,7 +7,8 @@
     "partners": "Partners",
     "portal": "Seller Portal",
     "becomeASeller": "Become a Seller",
-    "sellerLogin": "Seller Login"
+    "sellerLogin": "Seller Login",
+    "track": "Track Order"
   },
   "hero": {
     "badge": "The Logistics Partner for Online Brands in Egypt",
@@ -131,6 +132,51 @@
     "copyright": "© 2024 Panther Express. All rights reserved.",
     "privacy": "Privacy Policy",
     "terms": "Terms of Service",
-    "contact": "Contact Us"
+    "contact": "Contact Us",
+    "track": "Track Order"
+  },
+  "track": {
+    "badge": "Order Tracking",
+    "title": "Track Your Order",
+    "subtitle": "Enter your waybill number to see the latest status of your shipment.",
+    "inputPlaceholder": "Enter your waybill number",
+    "button": "Track",
+    "searching": "Tracking…",
+    "waybillLabel": "Waybill",
+    "currentStatus": "Current Status",
+    "lastUpdate": "Last update",
+    "historyTitle": "Tracking History",
+    "reasonLabel": "Note",
+    "invalidMsg": "Please enter a valid waybill number.",
+    "notFoundTitle": "We couldn't find that waybill",
+    "notFoundDesc": "Please double-check the number and try again. If it was shipped recently, it may take a little time to appear.",
+    "rateLimitedTitle": "Too many requests",
+    "rateLimitedDesc": "Please wait a moment and try again.",
+    "errorTitle": "Something went wrong",
+    "errorDesc": "We couldn't load your tracking right now. Please try again shortly.",
+    "stages": {
+      "PICKED_UP": "Picked Up",
+      "IN_TRANSIT": "In Transit",
+      "OUT_FOR_DELIVERY": "Out for Delivery",
+      "DELIVERED": "Delivered",
+      "RESCHEDULED": "Rescheduled",
+      "FAILED": "Delivery Attempt Failed",
+      "PARTIAL": "Partially Delivered",
+      "RETURNED": "Returned to Sender",
+      "CANCELLED": "Cancelled",
+      "REPLACEMENT": "Replacement"
+    },
+    "stageHint": {
+      "PICKED_UP": "We've picked up your order and it's entering our network.",
+      "IN_TRANSIT": "Your order is moving through our network.",
+      "OUT_FOR_DELIVERY": "Your order is out with a courier for delivery.",
+      "DELIVERED": "Your order has been delivered. Thank you!",
+      "RESCHEDULED": "Delivery was rescheduled. We'll attempt it again soon.",
+      "FAILED": "A delivery attempt didn't succeed. We'll try again.",
+      "PARTIAL": "Part of your order has been delivered.",
+      "RETURNED": "Your order is being returned to the sender.",
+      "CANCELLED": "This order has been cancelled.",
+      "REPLACEMENT": "This order is part of a replacement."
+    }
   }
 }
