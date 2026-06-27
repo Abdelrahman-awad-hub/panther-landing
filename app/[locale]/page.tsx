@@ -6,6 +6,7 @@ import { ServicesSection } from '@/components/sections/Services'
 import { ClientsSection } from '@/components/sections/Clients'
 import { SellerHighlightsSection } from '@/components/sections/SellerHighlights'
 import { LeadFormSection } from '@/components/sections/LeadForm'
+import { SocialDock } from '@/components/ui/SocialDock'
 import { env } from '@/lib/env'
 
 export default function HomePage() {
@@ -22,6 +23,7 @@ export default function HomePage() {
         <SellerHighlightsSection sellerPortalUrl={sellerPortalUrl} />
         <LeadFormSection />
       </main>
+      <SocialDock />
       <Footer />
     </>
   )

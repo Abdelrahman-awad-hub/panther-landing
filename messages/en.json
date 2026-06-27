@@ -116,6 +116,16 @@
     "volumeRequired": "Please select your monthly shipment volume",
     "urlInvalid": "Please enter a valid URL (starting with https://)"
   },
+  "social": {
+    "label": "Social media links",
+    "open": "Open contact menu",
+    "close": "Close contact menu",
+    "whatsapp": "WhatsApp",
+    "instagram": "Instagram",
+    "facebook": "Facebook",
+    "tiktok": "TikTok",
+    "email": "Email"
+  },
   "footer": {
     "tagline": "Fast. Reliable. Built for Sellers.",
     "copyright": "© 2024 Panther Express. All rights reserved.",
