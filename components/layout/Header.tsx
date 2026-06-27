@@ -57,13 +57,15 @@ export function Header({ sellerPortalUrl }: HeaderProps) {
               className="text-sm font-medium text-gray-400 hover:text-panther-black transition-colors px-1">
               {otherLocale === 'ar' ? 'العربية' : 'English'}
             </Link>
-            <a href={sellerPortalUrl} target="_blank" rel="noopener noreferrer">
+            <a href={sellerPortalUrl} target="_blank" rel="noopener noreferrer"
+              onClick={() => window.dataLayer?.push({ event: 'cta_click', cta_name: 'seller_login', cta_location: 'header' })}>
               <Button variant="outline" size="sm"
                 className="border-gray-300 text-panther-black hover:bg-gray-50 hover:text-panther-black bg-transparent h-9 px-4 text-sm">
                 {t('sellerLogin')}
               </Button>
             </a>
-            <a href="#join">
+            <a href="#join"
+              onClick={() => window.dataLayer?.push({ event: 'cta_click', cta_name: 'join_now', cta_location: 'header' })}>
               <Button size="sm" className="bg-panther-red hover:bg-panther-red-dark text-white h-9 px-5 text-sm font-semibold">
                 {t('becomeASeller')}
               </Button>
@@ -93,12 +95,13 @@ export function Header({ sellerPortalUrl }: HeaderProps) {
               <Link href={switchPath} className="text-gray-400 hover:text-panther-black text-sm transition-colors">
                 {otherLocale === 'ar' ? 'العربية' : 'English'}
               </Link>
-              <a href={sellerPortalUrl} target="_blank" rel="noopener noreferrer">
+              <a href={sellerPortalUrl} target="_blank" rel="noopener noreferrer"
+                onClick={() => window.dataLayer?.push({ event: 'cta_click', cta_name: 'seller_login', cta_location: 'header' })}>
                 <Button variant="outline" className="w-full border-gray-300 text-panther-black hover:bg-gray-50 hover:text-panther-black bg-transparent">
                   {t('sellerLogin')}
                 </Button>
               </a>
-              <a href="#join" onClick={() => setOpen(false)}>
+              <a href="#join" onClick={() => { setOpen(false); window.dataLayer?.push({ event: 'cta_click', cta_name: 'join_now', cta_location: 'header' }) }}>
                 <Button className="w-full bg-panther-red hover:bg-panther-red-dark text-white font-semibold">
                   {t('becomeASeller')}
                 </Button>

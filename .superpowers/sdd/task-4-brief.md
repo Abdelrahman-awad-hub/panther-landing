@@ -1,137 +1,117 @@
-### Task 4: Google Sheets Integration + Leads API Route
+### Task 4: Push `form_submit` event on lead form success
 
 **Files:**
-- Create: `lib/lead-schema.ts`
-- Create: `lib/google-sheets.ts`
-- Create: `app/api/leads/route.ts`
+- Modify: `components/sections/LeadForm.tsx:65-78`
 
 **Interfaces:**
-- Produces: `LeadSubmission` Zod type; `appendLeadToSheet(data: LeadSubmission): Promise<void>`; `POST /api/leads` returning `{ success: true }` or `{ error: string, status: 400|500 }`
+- Consumes: `window.dataLayer` (typed in Task 1)
+- Produces: `{ event: 'form_submit', form_name: 'contact' }` pushed to dataLayer on successful API response
 
-- [ ] **Step 1: Create lead validation schema**
+- [ ] **Step 1: Add dataLayer push inside `onSubmit`**
 
-Create `lib/lead-schema.ts`:
+Find the `onSubmit` function in `components/sections/LeadForm.tsx` (lines 65–78). The current `try` block is:
 
-```typescript
-import { z } from 'zod'
-
-export const LeadSubmissionSchema = z.object({
-  brandName: z.string().min(1),
-  phone: z
-    .string()
-    .min(1)
-    .regex(/^(\+20|0020|0)?1[0125][0-9]{8}$/, 'Invalid Egyptian phone number'),
-  volumeCategory: z.enum(['300', '1000', '5000', '5000plus']),
-  socialLink:  z.union([z.string().url(), z.literal('')]).optional(),
-  websiteUrl:  z.union([z.string().url(), z.literal('')]).optional(),
-  referrerUrl: z.string().optional().default(''),
-  landingUrl:  z.string().optional().default(''),
-  utmSource:   z.string().optional().default(''),
-  utmMedium:   z.string().optional().default(''),
-  utmCampaign: z.string().optional().default(''),
-  utmTerm:     z.string().optional().default(''),
-  utmContent:  z.string().optional().default(''),
-  userAgent:   z.string().optional().default(''),
-  submittedAt: z.string().optional(),
-  website_confirm: z.string().max(0).optional(),
+```ts
+const res = await fetch('/api/leads', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ ...values, website_confirm: honeypot, ...attribution }),
 })
-
-export type LeadSubmission = z.infer<typeof LeadSubmissionSchema>
+if (!res.ok) throw new Error()
+setStatus('success')
 ```
 
-- [ ] **Step 2: Create Google Sheets utility**
+Add the dataLayer push immediately after `setStatus('success')`:
 
-Create `lib/google-sheets.ts`:
-
-```typescript
-import { google } from 'googleapis'
-import { env } from './env'
-import type { LeadSubmission } from './lead-schema'
-
-async function getSheetsClient() {
-  const auth = new google.auth.GoogleAuth({
-    credentials: {
-      client_email: env.google.serviceAccountEmail,
-      private_key: env.google.privateKey,
-    },
-    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
-  })
-  const authClient = await auth.getClient()
-  return google.sheets({ version: 'v4', auth: authClient as Parameters<typeof google.sheets>[0]['auth'] })
-}
-
-export async function appendLeadToSheet(data: LeadSubmission): Promise<void> {
-  const sheets = await getSheetsClient()
-  const row = [
-    data.submittedAt ?? new Date().toISOString(),
-    data.brandName,
-    data.phone,
-    data.volumeCategory,
-    data.socialLink  ?? '',
-    data.websiteUrl  ?? '',
-    data.referrerUrl ?? '',
-    data.landingUrl  ?? '',
-    data.utmSource   ?? '',
-    data.utmMedium   ?? '',
-    data.utmCampaign ?? '',
-    data.utmTerm     ?? '',
-    data.utmContent  ?? '',
-    data.userAgent   ?? '',
-  ]
-  await sheets.spreadsheets.values.append({
-    spreadsheetId: env.google.sheetId,
-    range: 'Sheet1!A:N',
-    valueInputOption: 'USER_ENTERED',
-    requestBody: { values: [row] },
-  })
-}
+```ts
+const res = await fetch('/api/leads', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ ...values, website_confirm: honeypot, ...attribution }),
+})
+if (!res.ok) throw new Error()
+setStatus('success')
+window.dataLayer?.push({ event: 'form_submit', form_name: 'contact' })
 ```
 
-- [ ] **Step 3: Create Leads API route**
-
-Create `app/api/leads/route.ts`:
-
-```typescript
-import { NextRequest, NextResponse } from 'next/server'
-import { LeadSubmissionSchema } from '@/lib/lead-schema'
-import { appendLeadToSheet } from '@/lib/google-sheets'
-
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json()
-
-    if (body.website_confirm) {
-      return NextResponse.json({ success: true })
-    }
-
-    const result = LeadSubmissionSchema.safeParse({
-      ...body,
-      userAgent:   request.headers.get('user-agent') ?? '',
-      submittedAt: new Date().toISOString(),
-    })
-
-    if (!result.success) {
-      return NextResponse.json(
-        { error: 'Validation failed', issues: result.error.flatten() },
-        { status: 400 }
-      )
-    }
-
-    await appendLeadToSheet(result.data)
-    return NextResponse.json({ success: true })
-  } catch (error) {
-    console.error('[leads] submission error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
-  }
-}
-```
-
-- [ ] **Step 4: Commit backend**
+- [ ] **Step 2: Verify types compile**
 
 ```bash
-git add -A
-git commit -m "feat: add Google Sheets integration, lead validation schema, and leads API route"
+npx tsc --noEmit
+```
+
+Expected: no errors.
+
+- [ ] **Step 3: Verify the event fires manually**
+
+With the dev server running (`npm run dev`), open the lead form at `http://localhost:3000`. Open DevTools → Console. Submit the form with valid data. Then run:
+
+```js
+window.dataLayer
+```
+
+Expected: array contains an entry `{ event: 'form_submit', form_name: 'contact' }`.
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add components/sections/LeadForm.tsx
+git commit -m "feat: push form_submit event to dataLayer on lead form success"
 ```
 
 ---
 
+## GTM Dashboard Steps (post-deploy — no code changes)
+
+After deploying, configure the following inside GTM (`tagmanager.google.com`):
+
+### Triggers
+
+| Name | Type | Settings |
+|---|---|---|
+| All Pages — Load | Page View — Window Loaded | fires on all pages |
+| Route Change — Pageview | Custom Event | Event name: `pageview` |
+| Lead Form Submit | Custom Event | Event name: `form_submit` |
+| All Element Clicks | Click — All Elements | fires on all pages |
+| Scroll Depth | Scroll Depth | Percentages: 25, 50, 75, 90 |
+
+### Tags
+
+**Meta Pixel — Base Code** (Custom HTML, trigger: All Pages — Load)
+
+```html
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '25640573636');
+fbq('track', 'PageView');
+</script>
+<noscript>
+<img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=25640573636&ev=PageView&noscript=1"/>
+</noscript>
+```
+
+**Meta Pixel — Route PageView** (Custom HTML, trigger: Route Change — Pageview)
+
+```html
+<script>
+  if (typeof fbq !== 'undefined') { fbq('track', 'PageView'); }
+</script>
+```
+
+**Meta Pixel — Lead** (Custom HTML, trigger: Lead Form Submit)
+
+```html
+<script>
+  if (typeof fbq !== 'undefined') { fbq('track', 'Lead'); }
+</script>
+```
+
+After creating all tags and triggers, click **Submit** in GTM to publish the container.

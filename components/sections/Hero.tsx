@@ -1,3 +1,5 @@
+'use client'
+
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Zap, ArrowRight } from 'lucide-react'
@@ -45,14 +47,16 @@ export function HeroSection({ sellerPortalUrl }: HeroSectionProps) {
 
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row gap-4">
-            <a href="#join">
+            <a href="#join"
+              onClick={() => window.dataLayer?.push({ event: 'cta_click', cta_name: 'join_now', cta_location: 'hero' })}>
               <Button size="lg"
                 className="bg-panther-red hover:bg-panther-red-dark text-white font-bold px-8 text-base group w-full sm:w-auto">
                 {t('ctaPrimary')}
                 <ArrowRight size={18} className="ms-2 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 rtl:rotate-180 transition-transform" />
               </Button>
             </a>
-            <a href={sellerPortalUrl} target="_blank" rel="noopener noreferrer">
+            <a href={sellerPortalUrl} target="_blank" rel="noopener noreferrer"
+              onClick={() => window.dataLayer?.push({ event: 'cta_click', cta_name: 'seller_login', cta_location: 'hero' })}>
               <Button size="lg" variant="outline"
                 className="border-white/25 text-white hover:bg-white/10 hover:text-white bg-transparent font-medium px-8 text-base w-full sm:w-auto">
                 {t('ctaSecondary')}

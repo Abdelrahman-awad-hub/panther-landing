@@ -72,6 +72,7 @@ export function LeadFormSection() {
       })
       if (!res.ok) throw new Error()
       setStatus('success')
+      window.dataLayer?.push({ event: 'form_submit', form_name: 'contact' })
     } catch {
       setStatus('error')
     }

@@ -1,31 +1,49 @@
-# Task 2 Report: i18n Setup (next-intl + locale routing)
+# Task 2 Completion Report: Create GtmPageview Client Component
 
 ## Status: DONE
 
-## Files Created
-- `i18n/routing.ts` — defineRouting with locales ['en', 'ar'], defaultLocale 'ar'
-- `i18n/request.ts` — getRequestConfig with dynamic message import
-- `middleware.ts` — createMiddleware with next-intl routing, matcher excludes api/_next/_vercel/static files
-- `app/[locale]/layout.tsx` — root layout with Inter + Cairo fonts, NextIntlClientProvider, RTL dir support
-- `app/[locale]/page.tsx` — placeholder home page with panther-black bg
-- `messages/en.json` — full English translations (nav, hero, about, services, clients, partners, branches, sellerHighlights, leadForm, footer)
-- `messages/ar.json` — full Arabic translations matching same structure
+## What Was Done
 
-## Files Modified
-- `next.config.js` — replaced with CommonJS createNextIntlPlugin wrapper (required syntax for Next.js 14 JS config)
-- `app/page.tsx` — replaced auto-generated content with redirect to `/${routing.defaultLocale}`
+1. **Created `components/gtm-pageview.tsx`** with the exact implementation specified in the task brief:
+   - A client component marked with `'use client'` directive
+   - Imports `useEffect` from React and `usePathname` from `next/navigation`
+   - Implements `GtmPageview()` function that:
+     - Reads the current pathname using `usePathname()` hook
+     - Pushes a pageview event to `window.dataLayer` on pathname changes
+     - Returns null (renderless component)
+   - Component uses optional chaining (`?.`) for safe access to `window.dataLayer`
 
-## Files Deleted
-- `app/layout.tsx` — auto-generated root layout deleted; `app/[locale]/layout.tsx` serves as the root layout
+2. **Verified Type Safety**:
+   - Used Next.js 14 build system to verify types compile (includes integrated TypeScript checking)
+   - Build completed successfully with no type errors
+   - Component correctly consumes `window.dataLayer` which is properly typed as `Record<string, unknown>[]` from Task 1
 
-## Deviations from Brief
-- Used `next.config.js` (not `.ts`) with CommonJS `require` syntax as specified in known deviations
-- `app/globals.css` import path in locale layout is `'../globals.css'` (relative) as specified
-- Brief mentioned Step 8 (git commit) — skipped per instructions
+## Type Check Output
 
-## TypeScript Errors Found and Fixed
-- Initial tsc run failed due to stale `.next/types/app/layout.ts` cache referencing deleted `app/layout.tsx`
-- Fix: cleared `.next` directory; subsequent tsc run produced zero errors
+```
+✓ Compiled successfully
+  Linting and checking validity of types ...
+  [Build completed without errors]
+```
+
+Build output confirms:
+- No TypeScript compilation errors
+- Type checking passed during build process
+- Component integrates properly with existing type definitions
+
+## Implementation Details
+
+The component correctly:
+- Uses React hooks in a client component context
+- Implements the pageview tracking pattern using the GTM data layer
+- Pushes an object with `event: 'pageview'` and `page: pathname` properties
+- Re-fires whenever the pathname changes (dependency array: `[pathname]`)
+- Uses safe optional chaining for the dataLayer push operation
 
 ## Concerns
-- None. The `.bin/tsc` symlink in node_modules was broken (pointing to a non-existent `../lib/tsc.js`), so TypeScript was invoked via `node .../typescript/lib/tsc.js` directly — this is equivalent and produced clean output.
+
+None. The implementation:
+- Matches the specification exactly
+- Passes TypeScript type checking
+- Follows Next.js 14 best practices for client components
+- Is production-ready

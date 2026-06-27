@@ -1,191 +1,93 @@
-### Task 3: Data Config Files + Environment Setup
+### Task 3: Wire GTM into the locale layout
 
 **Files:**
-- Create: `data/services.ts`
-- Create: `data/clients.ts`
-- Create: `data/partners.ts`
-- Create: `data/branches.ts`
-- Create: `.env.example`
-- Create: `lib/env.ts`
+- Modify: `app/[locale]/layout.tsx`
 
 **Interfaces:**
-- Produces: `services`, `clients`, `partners`, `branches` typed arrays; `env` object with typed config
+- Consumes: `GoogleTagManager` from `@next/third-parties/google`, `GtmPageview` from Task 2, `NEXT_PUBLIC_GTM_ID` env var
+- Produces: GTM script loaded on every page; pageview events fired on navigation
 
-- [ ] **Step 1: Create services data**
+- [ ] **Step 1: Update `app/[locale]/layout.tsx`**
 
-Create `data/services.ts`:
+Replace the entire file content with the following (the only additions are the two new imports and the two new JSX elements):
 
-```typescript
-export interface Service {
-  id: string
-  iconName: string
-  titleKey: string
-  descKey: string
+```tsx
+import type { Metadata } from 'next'
+import { Inter, Cairo } from 'next/font/google'
+import { NextIntlClientProvider } from 'next-intl'
+import { getMessages } from 'next-intl/server'
+import { notFound } from 'next/navigation'
+import { GoogleTagManager } from '@next/third-parties/google'
+import { routing } from '@/i18n/routing'
+import { GtmPageview } from '@/components/gtm-pageview'
+import '../globals.css'
+
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
+const cairo = Cairo({ subsets: ['arabic'], variable: '--font-cairo' })
+
+export const metadata: Metadata = {
+  title: 'Panther Express — Ship Faster, Grow Bigger',
+  description: "Egypt's trusted logistics partner for e-commerce brands and growing merchants.",
+  icons: { icon: '/panthe-logo.png' },
 }
 
-export const services: Service[] = [
-  { id: 'shipment-creation', iconName: 'Package',    titleKey: 'item0Title', descKey: 'item0Desc' },
-  { id: 'bulk-upload',       iconName: 'Upload',     titleKey: 'item1Title', descKey: 'item1Desc' },
-  { id: 'tracking',          iconName: 'MapPin',     titleKey: 'item2Title', descKey: 'item2Desc' },
-  { id: 'saved-customers',   iconName: 'Users',      titleKey: 'item3Title', descKey: 'item3Desc' },
-  { id: 'label-printing',    iconName: 'Printer',    titleKey: 'item4Title', descKey: 'item4Desc' },
-  { id: 'pricing',           iconName: 'DollarSign', titleKey: 'item5Title', descKey: 'item5Desc' },
-  { id: 'coverage',          iconName: 'Globe',      titleKey: 'item6Title', descKey: 'item6Desc' },
-  { id: 'cod-performance',   iconName: 'BarChart2',  titleKey: 'item7Title', descKey: 'item7Desc' },
-]
-```
+export default async function LocaleLayout({
+  children,
+  params,
+}: Readonly<{
+  children: React.ReactNode
+  params: Promise<{ locale: string }>
+}>) {
+  const { locale } = await params
+  if (!routing.locales.includes(locale as (typeof routing.locales)[number])) {
+    notFound()
+  }
+  const messages = await getMessages()
+  const dir = locale === 'ar' ? 'rtl' : 'ltr'
 
-- [ ] **Step 2: Create clients data**
-
-Create `data/clients.ts`:
-
-```typescript
-export interface Client {
-  id: string
-  name: string
-  category: string
+  return (
+    <html lang={locale} dir={dir}>
+      <GoogleTagManager gtmId={process.env.NEXT_PUBLIC_GTM_ID!} />
+      <body className={`${inter.variable} ${cairo.variable} antialiased`}>
+        <GtmPageview />
+        <NextIntlClientProvider messages={messages}>
+          {children}
+        </NextIntlClientProvider>
+      </body>
+    </html>
+  )
 }
-
-export const clients: Client[] = [
-  { id: 'brand-1', name: 'Cairo Closet',  category: 'Fashion' },
-  { id: 'brand-2', name: 'Delta Stores',  category: 'Electronics' },
-  { id: 'brand-3', name: 'Nile Naturals', category: 'Beauty' },
-  { id: 'brand-4', name: 'Memphis Gear',  category: 'Sports' },
-  { id: 'brand-5', name: 'Sphinx Home',   category: 'Home & Living' },
-  { id: 'brand-6', name: 'Luxor Kids',    category: 'Kids' },
-  { id: 'brand-7', name: 'Sahara Supply', category: 'B2B' },
-  { id: 'brand-8', name: 'Alex Apparel',  category: 'Fashion' },
-]
 ```
 
-- [ ] **Step 3: Create partners data**
-
-Create `data/partners.ts`:
-
-```typescript
-export interface Partner {
-  id: string
-  name: string
-  type: 'operational' | 'strategic' | 'technology'
-}
-
-export const partners: Partner[] = [
-  { id: 'p1', name: 'EgyptPost',           type: 'operational' },
-  { id: 'p2', name: 'Cairo Logistics Hub', type: 'operational' },
-  { id: 'p3', name: 'Delta Warehousing',   type: 'strategic' },
-  { id: 'p4', name: 'PayTech Egypt',       type: 'technology' },
-  { id: 'p5', name: 'Gulf Express',        type: 'strategic' },
-  { id: 'p6', name: 'AlexPort Services',   type: 'operational' },
-]
-```
-
-- [ ] **Step 4: Create branches data**
-
-Create `data/branches.ts`:
-
-```typescript
-export interface Branch {
-  id: string
-  city: string
-  cityAr: string
-  address: string
-  addressAr: string
-  phone: string
-  areas: string[]
-  areasAr: string[]
-  isHQ?: boolean
-}
-
-export const branches: Branch[] = [
-  {
-    id: 'cairo',
-    city: 'Cairo', cityAr: 'القاهرة',
-    address: 'Nasr City, Cairo', addressAr: 'مدينة نصر، القاهرة',
-    phone: '+20 2 XXXX XXXX',
-    areas:   ['Nasr City','Heliopolis','New Cairo','Maadi','Zamalek','Downtown','Shubra','El Obour'],
-    areasAr: ['مدينة نصر','مصر الجديدة','القاهرة الجديدة','المعادي','الزمالك','وسط البلد','شبرا','العبور'],
-    isHQ: true,
-  },
-  {
-    id: 'giza',
-    city: 'Giza', cityAr: 'الجيزة',
-    address: 'Dokki, Giza', addressAr: 'الدقي، الجيزة',
-    phone: '+20 2 XXXX XXXX',
-    areas:   ['Dokki','6th of October','Sheikh Zayed','Haram','Faisal','Imbaba'],
-    areasAr: ['الدقي','السادس من أكتوبر','الشيخ زايد','الهرم','فيصل','إمبابة'],
-  },
-  {
-    id: 'alexandria',
-    city: 'Alexandria', cityAr: 'الإسكندرية',
-    address: 'Smouha, Alexandria', addressAr: 'سموحة، الإسكندرية',
-    phone: '+20 3 XXXX XXXX',
-    areas:   ['Smouha','Roushdi','Agami','Borg El Arab','Miami','Sidi Bishr'],
-    areasAr: ['سموحة','رشدي','العجمي','برج العرب','ميامي','سيدي بشر'],
-  },
-  {
-    id: 'mansoura',
-    city: 'Mansoura', cityAr: 'المنصورة',
-    address: 'City Center, Mansoura', addressAr: 'وسط المدينة، المنصورة',
-    phone: '+20 50 XXXX XXXX',
-    areas:   ['Mansoura','Talkha','Sherbin','Mit Ghamr'],
-    areasAr: ['المنصورة','طلخا','شربين','ميت غمر'],
-  },
-  {
-    id: 'tanta',
-    city: 'Tanta', cityAr: 'طنطا',
-    address: 'El Geish Street, Tanta', addressAr: 'شارع الجيش، طنطا',
-    phone: '+20 40 XXXX XXXX',
-    areas:   ['Tanta','Kafr El Zayat','Samannoud','Basyoun'],
-    areasAr: ['طنطا','كفر الزيات','سمنود','بسيون'],
-  },
-  {
-    id: 'assiut',
-    city: 'Assiut', cityAr: 'أسيوط',
-    address: 'New Assiut, Assiut', addressAr: 'أسيوط الجديدة، أسيوط',
-    phone: '+20 88 XXXX XXXX',
-    areas:   ['Assiut','Abnub','El Qusiya','Sohag'],
-    areasAr: ['أسيوط','أبنوب','القوصية','سوهاج'],
-  },
-]
-```
-
-- [ ] **Step 5: Create .env.example**
-
-Create `.env.example`:
+- [ ] **Step 2: Verify types compile**
 
 ```bash
-# Seller Portal URL
-NEXT_PUBLIC_SELLER_PORTAL_URL=https://portal.pantherexpress.com
-
-# Google Sheets — Lead Form Storage
-# 1. Create a Google Cloud project and enable the Sheets API
-# 2. Create a Service Account and download the JSON key
-# 3. Share your Google Sheet with the service account email
-GOOGLE_SERVICE_ACCOUNT_EMAIL=your-service-account@your-project.iam.gserviceaccount.com
-GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nYOUR_KEY_HERE\n-----END PRIVATE KEY-----\n"
-GOOGLE_SHEET_ID=1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms
+npx tsc --noEmit
 ```
 
-- [ ] **Step 6: Create typed env module**
+Expected: no errors.
 
-Create `lib/env.ts`:
-
-```typescript
-export const env = {
-  sellerPortalUrl: process.env.NEXT_PUBLIC_SELLER_PORTAL_URL ?? '#',
-  google: {
-    serviceAccountEmail: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL ?? '',
-    privateKey: (process.env.GOOGLE_PRIVATE_KEY ?? '').replace(/\\n/g, '\n'),
-    sheetId: process.env.GOOGLE_SHEET_ID ?? '',
-  },
-} as const
-```
-
-- [ ] **Step 7: Commit data config**
+- [ ] **Step 3: Start dev server and confirm GTM script loads**
 
 ```bash
-git add -A
-git commit -m "feat: add mock data configs for services, clients, partners, branches, and env setup"
+npm run dev
+```
+
+Open `http://localhost:3000` in the browser. Open DevTools → Network tab → filter by `gtm.js`. You should see a request to `https://www.googletagmanager.com/gtm.js?id=GTM-637363636`.
+
+Also open DevTools → Console and run:
+
+```js
+window.dataLayer
+```
+
+Expected: an array with at least one object containing `event: 'pageview'`.
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add app/\[locale\]/layout.tsx
+git commit -m "feat: add GoogleTagManager and GtmPageview to locale layout"
 ```
 
 ---
