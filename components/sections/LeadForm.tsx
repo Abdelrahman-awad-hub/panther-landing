@@ -1,8 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
+import { useForm, Controller } from 'react-hook-form'
 import { useTranslations, useLocale } from 'next-intl'
 import { CheckCircle2, AlertCircle, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -11,17 +10,26 @@ import { Label } from '@/components/ui/label'
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select'
-import { LeadSubmissionSchema, type LeadSubmission, type LeadSubmissionInput } from '@/lib/lead-schema'
+
+type FormData = {
+  brandName: string
+  phone: string
+  volumeCategory: string
+  socialLink: string
+  websiteUrl: string
+}
 
 const VOLUME_KEYS = ['300', '1000', '5000', '5000plus'] as const
+const EG_PHONE = /^(\+20|0020|0)?1[0125][0-9]{8,10}$/
+const URL_RE = /^https?:\/\/.+/
 
 const PITCH_POINTS = [
-  { en: 'Up and running in 24 hours', ar: 'جاهز للعمل في 24 ساعة' },
-  { en: 'No contracts, cancel anytime', ar: 'بدون عقود، ألغِ في أي وقت' },
-  { en: 'Transparent rates, no hidden fees', ar: 'أسعار شفافة، بدون رسوم خفية' },
+  { en: 'Account activated in 24 hours', ar: 'تفعيل الحساب خلال 24 ساعة' },
+  { en: 'No subscription fees', ar: 'بدون رسوم اشتراك' },
+  { en: 'Transparent pricing, no hidden fees', ar: 'أسعار واضحة بدون رسوم مخفية' },
 ]
 
-function readUTMs() {
+function readUTMs(): Record<string, string> {
   if (typeof window === 'undefined') return {}
   const p = new URLSearchParams(window.location.search)
   return {
@@ -37,29 +45,30 @@ export function LeadFormSection() {
   const t = useTranslations('leadForm')
   const locale = useLocale()
   const isAr = locale === 'ar'
-  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
+  const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const [attribution, setAttribution] = useState<Record<string, string>>({})
 
   useEffect(() => {
     setAttribution({
       referrerUrl: document.referrer,
-      landingUrl:  window.location.href,
-      ...(readUTMs() as Record<string, string>),
+      landingUrl: window.location.href,
+      ...readUTMs(),
     })
   }, [])
 
-  const form = useForm<LeadSubmissionInput, unknown, LeadSubmission>({
-    resolver: zodResolver(LeadSubmissionSchema),
-    defaultValues: { brandName: '', phone: '', socialLink: '', websiteUrl: '', website_confirm: '' },
+  const [honeypot, setHoneypot] = useState('')
+  const { handleSubmit, control, formState: { errors, isSubmitting } } = useForm<FormData>({
+    mode: 'onTouched',
+    defaultValues: { brandName: '', phone: '', volumeCategory: '', socialLink: '', websiteUrl: '' },
   })
 
-  const onSubmit = async (values: LeadSubmission) => {
-    setStatus('loading')
+  const onSubmit = async (values: FormData) => {
+    if (honeypot) return
     try {
       const res = await fetch('/api/leads', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...values, ...attribution }),
+        body: JSON.stringify({ ...values, website_confirm: honeypot, ...attribution }),
       })
       if (!res.ok) throw new Error()
       setStatus('success')
@@ -68,7 +77,6 @@ export function LeadFormSection() {
     }
   }
 
-  /* ── Success state ── */
   if (status === 'success') {
     return (
       <section id="join" className="bg-white py-24 lg:py-32">
@@ -87,7 +95,6 @@ export function LeadFormSection() {
     )
   }
 
-  /* ── Field & error styles ── */
   const fieldClass = [
     'bg-gray-50 border border-gray-200',
     'text-gray-900 placeholder:text-gray-400',
@@ -99,7 +106,6 @@ export function LeadFormSection() {
 
   return (
     <section id="join" className="relative bg-white py-24 lg:py-32 overflow-hidden">
-      {/* Very subtle red tint */}
       <div
         className="absolute inset-0 pointer-events-none select-none"
         style={{ background: 'radial-gradient(ellipse 55% 65% at 72% 50%, rgba(229,0,26,0.03) 0%, transparent 65%)' }}
@@ -109,9 +115,8 @@ export function LeadFormSection() {
       <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-5 gap-12 lg:gap-16 items-start">
 
-          {/* ── Left: Pitch column ── */}
+          {/* Left: Pitch column */}
           <div className="lg:col-span-2 lg:pt-2 relative">
-            {/* Watermark */}
             <span
               className="absolute -top-6 select-none pointer-events-none font-black leading-none"
               style={{
@@ -126,46 +131,40 @@ export function LeadFormSection() {
               {isAr ? '٢٤س' : '24H'}
             </span>
 
-            {/* Eyebrow */}
             <p className="relative flex items-center gap-2 text-panther-red text-xs font-bold tracking-[0.18em] uppercase mb-5">
               <span className="w-1.5 h-1.5 rounded-full bg-panther-red-light flex-shrink-0" aria-hidden="true" />
-              {isAr ? 'انضم الآن' : 'Join Panther'}
+              {isAr ? 'انضم الآن' : 'Join Now'}
             </p>
 
-            {/* Headline */}
             <h2 className="relative text-3xl lg:text-4xl font-black text-panther-black leading-tight tracking-tight mb-4">
               {isAr
-                ? <>ابدأ الشحن<br />خلال ٢٤ ساعة.</>
-                : <>Start shipping<br />in 24 hours.</>
+                ? <>سيب بياناتك وابدأ<br />شراكتك مع Panther<br />خلال 24 ساعة</>
+                : <>Leave your info and start<br />your partnership with Panther<br />in 24 hours.</>
               }
             </h2>
 
-            {/* Sub */}
             <p className="relative text-gray-500 text-base leading-relaxed mb-10">
               {isAr
-                ? 'أخبرنا عن ماركتك وسنتولى الباقي.'
-                : 'Tell us about your brand and we handle the rest.'}
+                ? 'سيب بيانات البراند بتاعك، وفريق Panther هيتواصل معاك بأفضل خطة Logistics مناسبة لحجم شغلك.'
+                : 'Share your brand details and the Panther team will reach out with the best logistics plan for your business size.'}
             </p>
 
-            {/* Proof points */}
             <ul className="relative space-y-3.5">
               {PITCH_POINTS.map((pt, i) => (
                 <li key={i} className="flex items-center gap-3">
                   <span className="flex-shrink-0 w-5 h-5 rounded-full bg-panther-red/10 border border-panther-red/20 flex items-center justify-center">
                     <Check size={11} className="text-panther-red" strokeWidth={2.5} />
                   </span>
-                  <span className="text-gray-600 text-sm">
-                    {isAr ? pt.ar : pt.en}
-                  </span>
+                  <span className="text-gray-600 text-sm">{isAr ? pt.ar : pt.en}</span>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* ── Right: Form card ── */}
+          {/* Right: Form card */}
           <div className="lg:col-span-3">
             <form
-              onSubmit={form.handleSubmit(onSubmit)}
+              onSubmit={handleSubmit(onSubmit)}
               dir={isAr ? 'rtl' : 'ltr'}
               className="bg-white rounded-2xl border border-gray-200 overflow-hidden"
               style={{
@@ -179,21 +178,30 @@ export function LeadFormSection() {
                 <input
                   type="text" tabIndex={-1} autoComplete="off"
                   className="sr-only" aria-hidden="true"
-                  {...form.register('website_confirm')}
+                  value={honeypot} onChange={e => setHoneypot(e.target.value)}
                 />
 
-                {/* Row: Brand + Phone */}
+                {/* Brand + Phone */}
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <Label className="text-gray-600 font-medium text-xs tracking-wide uppercase">
                       {t('brandName')} <span className="text-panther-red">*</span>
                     </Label>
-                    <Input
-                      placeholder={t('brandNamePlaceholder')}
-                      className={fieldClass}
-                      {...form.register('brandName')}
+                    <Controller
+                      control={control}
+                      name="brandName"
+                      rules={{ required: true }}
+                      render={({ field }) => (
+                        <Input
+                          placeholder={t('brandNamePlaceholder')}
+                          className={fieldClass}
+                          value={field.value}
+                          onChange={field.onChange}
+                          onBlur={field.onBlur}
+                        />
+                      )}
                     />
-                    {form.formState.errors.brandName && (
+                    {errors.brandName && (
                       <p className="text-panther-red text-xs mt-1">{t('brandNameRequired')}</p>
                     )}
                   </div>
@@ -202,16 +210,24 @@ export function LeadFormSection() {
                     <Label className="text-gray-600 font-medium text-xs tracking-wide uppercase">
                       {t('phone')} <span className="text-panther-red">*</span>
                     </Label>
-                    <Input
-                      type="tel" dir="ltr"
-                      placeholder={t('phonePlaceholder')}
-                      className={fieldClass}
-                      {...form.register('phone')}
+                    <Controller
+                      control={control}
+                      name="phone"
+                      rules={{ required: true, pattern: EG_PHONE }}
+                      render={({ field }) => (
+                        <Input
+                          type="tel" dir="ltr"
+                          placeholder={t('phonePlaceholder')}
+                          className={fieldClass}
+                          value={field.value}
+                          onChange={field.onChange}
+                          onBlur={field.onBlur}
+                        />
+                      )}
                     />
-                    {form.formState.errors.phone && (
+                    {errors.phone && (
                       <p className="text-panther-red text-xs mt-1">
-                        {form.formState.errors.phone.type === 'too_small'
-                          ? t('phoneRequired') : t('phoneInvalid')}
+                        {errors.phone.type === 'required' ? t('phoneRequired') : t('phoneInvalid')}
                       </p>
                     )}
                   </div>
@@ -222,41 +238,55 @@ export function LeadFormSection() {
                   <Label className="text-gray-600 font-medium text-xs tracking-wide uppercase">
                     {t('volume')} <span className="text-panther-red">*</span>
                   </Label>
-                  <Select onValueChange={(v) =>
-                    form.setValue('volumeCategory', v as LeadSubmission['volumeCategory'], { shouldValidate: true })
-                  }>
-                    <SelectTrigger className={`${fieldClass} w-full`}>
-                      <SelectValue placeholder={t('volumePlaceholder')} />
-                    </SelectTrigger>
-                    <SelectContent className="bg-white border-gray-200 text-gray-900">
-                      {VOLUME_KEYS.map((k) => (
-                        <SelectItem
-                          key={k} value={k}
-                          className="text-gray-900 focus:bg-gray-50 focus:text-gray-900"
-                        >
-                          {t(`volume${k}`)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {form.formState.errors.volumeCategory && (
+                  <Controller
+                    control={control}
+                    name="volumeCategory"
+                    rules={{ required: true }}
+                    render={({ field }) => (
+                      <Select onValueChange={field.onChange} value={field.value ?? ''}>
+                        <SelectTrigger className={`${fieldClass} w-full`}>
+                          <SelectValue placeholder={t('volumePlaceholder')} />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white border-gray-200 text-gray-900">
+                          {VOLUME_KEYS.map((k) => (
+                            <SelectItem
+                              key={k} value={k}
+                              className="text-gray-900 focus:bg-gray-50 focus:text-gray-900"
+                            >
+                              {t(`volume${k}`)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                  {errors.volumeCategory && (
                     <p className="text-panther-red text-xs mt-1">{t('volumeRequired')}</p>
                   )}
                 </div>
 
-                {/* Row: Social + Website */}
+                {/* Social + Website */}
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <Label className="text-gray-600 font-medium text-xs tracking-wide uppercase">
                       {t('social')}
                     </Label>
-                    <Input
-                      type="url" dir="ltr"
-                      placeholder={t('socialPlaceholder')}
-                      className={fieldClass}
-                      {...form.register('socialLink')}
+                    <Controller
+                      control={control}
+                      name="socialLink"
+                      rules={{ validate: v => !v || URL_RE.test(v) }}
+                      render={({ field }) => (
+                        <Input
+                          type="url" dir="ltr"
+                          placeholder={t('socialPlaceholder')}
+                          className={fieldClass}
+                          value={field.value}
+                          onChange={field.onChange}
+                          onBlur={field.onBlur}
+                        />
+                      )}
                     />
-                    {form.formState.errors.socialLink && (
+                    {errors.socialLink && (
                       <p className="text-panther-red text-xs mt-1">{t('urlInvalid')}</p>
                     )}
                   </div>
@@ -265,19 +295,27 @@ export function LeadFormSection() {
                     <Label className="text-gray-600 font-medium text-xs tracking-wide uppercase">
                       {t('website')}
                     </Label>
-                    <Input
-                      type="url" dir="ltr"
-                      placeholder={t('websitePlaceholder')}
-                      className={fieldClass}
-                      {...form.register('websiteUrl')}
+                    <Controller
+                      control={control}
+                      name="websiteUrl"
+                      rules={{ validate: v => !v || URL_RE.test(v) }}
+                      render={({ field }) => (
+                        <Input
+                          type="url" dir="ltr"
+                          placeholder={t('websitePlaceholder')}
+                          className={fieldClass}
+                          value={field.value}
+                          onChange={field.onChange}
+                          onBlur={field.onBlur}
+                        />
+                      )}
                     />
-                    {form.formState.errors.websiteUrl && (
+                    {errors.websiteUrl && (
                       <p className="text-panther-red text-xs mt-1">{t('urlInvalid')}</p>
                     )}
                   </div>
                 </div>
 
-                {/* Error banner */}
                 {status === 'error' && (
                   <div className="flex items-start gap-2.5 bg-panther-red/5 border border-panther-red/20 rounded-lg p-3">
                     <AlertCircle size={15} className="text-panther-red shrink-0 mt-0.5" />
@@ -286,14 +324,13 @@ export function LeadFormSection() {
                 )}
               </div>
 
-              {/* Submit — flush to card edges */}
               <div className="px-7 sm:px-8 pb-7 sm:pb-8">
                 <Button
                   type="submit"
-                  disabled={status === 'loading'}
+                  disabled={isSubmitting}
                   className="w-full bg-panther-red hover:bg-panther-red-dark text-white font-bold h-12 text-sm tracking-wide rounded-lg btn-red-glow disabled:opacity-50"
                 >
-                  {status === 'loading' ? t('submitting') : t('submit')}
+                  {isSubmitting ? t('submitting') : t('submit')}
                 </Button>
               </div>
             </form>

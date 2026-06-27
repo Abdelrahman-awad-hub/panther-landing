@@ -5,7 +5,7 @@ export const LeadSubmissionSchema = z.object({
   phone: z
     .string()
     .min(1)
-    .regex(/^(\+20|0020|0)?1[0125][0-9]{8}$/, 'Invalid Egyptian phone number'),
+    .regex(/^(\+20|0020|0)?1[0125][0-9]{8,10}$/, 'Invalid Egyptian phone number'),
   volumeCategory: z.enum(['300', '1000', '5000', '5000plus']),
   socialLink:  z.union([z.string().url(), z.literal('')]).optional(),
   websiteUrl:  z.union([z.string().url(), z.literal('')]).optional(),

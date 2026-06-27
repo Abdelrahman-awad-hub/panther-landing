@@ -1,9 +1,9 @@
 import { useTranslations } from 'next-intl'
-import { Package, Upload, MapPin, Users, Printer, DollarSign, Globe, BarChart2 } from 'lucide-react'
+import { Truck, MapPin, Upload, Wallet, Globe, Tag } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
-const icons: LucideIcon[] = [Package, Upload, MapPin, Users, Printer, DollarSign, Globe, BarChart2]
-const itemKeys = ['0','1','2','3','4','5','6','7'] as const
+const icons: LucideIcon[] = [Truck, MapPin, Upload, Wallet, Globe, Tag]
+const itemKeys = ['0','1','2','3','4','5'] as const
 
 export function ServicesSection() {
   const t = useTranslations('services')
@@ -19,7 +19,7 @@ export function ServicesSection() {
           <p className="text-lg text-zinc-500 max-w-2xl mx-auto">{t('subtitle')}</p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {itemKeys.map((i) => {
             const Icon = icons[Number(i)]
             return (
