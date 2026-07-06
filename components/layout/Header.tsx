@@ -8,7 +8,7 @@ import { Menu, X } from 'lucide-react'
 import { Logo } from '@/components/ui/Logo'
 import { Button } from '@/components/ui/button'
 
-const NAV_SECTIONS = ['services', 'about', 'clients', 'branches'] as const
+const NAV_SECTIONS = ['services', 'about', 'clients'] as const
 
 interface HeaderProps {
   sellerPortalUrl: string
@@ -52,6 +52,10 @@ export function Header({ sellerPortalUrl }: HeaderProps) {
             <Link href={`/${locale}/track`}
               className="text-sm font-medium text-gray-500 hover:text-panther-black transition-colors">
               {t('track')}
+            </Link>
+            <Link href={`/${locale}/contact`}
+              className="text-sm font-medium text-gray-500 hover:text-panther-black transition-colors">
+              {t('contact')}
             </Link>
           </nav>
 
@@ -98,6 +102,10 @@ export function Header({ sellerPortalUrl }: HeaderProps) {
             <Link href={`/${locale}/track`} onClick={() => setOpen(false)}
               className="text-gray-600 hover:text-panther-black py-2.5 text-base border-b border-gray-100 last:border-0 transition-colors">
               {t('track')}
+            </Link>
+            <Link href={`/${locale}/contact`} onClick={() => setOpen(false)}
+              className="text-gray-600 hover:text-panther-black py-2.5 text-base border-b border-gray-100 last:border-0 transition-colors">
+              {t('contact')}
             </Link>
             <div className="pt-4 flex flex-col gap-2.5">
               <Link href={switchPath} className="text-gray-400 hover:text-panther-black text-sm transition-colors">

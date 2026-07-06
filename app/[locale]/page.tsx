@@ -3,6 +3,7 @@ import { Footer } from '@/components/layout/Footer'
 import { HeroSection } from '@/components/sections/Hero'
 import { AboutSection } from '@/components/sections/About'
 import { ServicesSection } from '@/components/sections/Services'
+import { ShopifyIntegrationSection } from '@/components/sections/ShopifyIntegration'
 import { ClientsSection } from '@/components/sections/Clients'
 import { SellerHighlightsSection } from '@/components/sections/SellerHighlights'
 import { LeadFormSection } from '@/components/sections/LeadForm'
@@ -19,6 +20,7 @@ export default function HomePage() {
         <HeroSection />
         <AboutSection />
         <ServicesSection />
+        <ShopifyIntegrationSection />
         <ClientsSection />
         <SellerHighlightsSection sellerPortalUrl={sellerPortalUrl} />
         <LeadFormSection />

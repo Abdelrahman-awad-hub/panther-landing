@@ -1,10 +1,10 @@
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
-import { ArrowRight, Package, Upload, MapPin, Printer, Users, BarChart2 } from 'lucide-react'
+import { ArrowRight, Package, Upload, MapPin, Printer } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
-const featureIcons: LucideIcon[] = [Package, Upload, MapPin, Printer, Users, BarChart2]
-const featureKeys = ['0','1','2','3','4','5'] as const
+const featureIcons: LucideIcon[] = [Package, Upload, MapPin, Printer]
+const featureKeys = ['0','1','2','3'] as const
 
 interface SellerHighlightsProps {
   sellerPortalUrl: string

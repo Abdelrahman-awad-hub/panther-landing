@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import { useTranslations } from 'next-intl'
 import { clients } from '@/data/clients'
 
@@ -19,10 +20,20 @@ export function ClientsSection() {
           {clients.map((client) => (
             <div key={client.id}
               className="bg-[#F9F8F7] border border-zinc-100 rounded-2xl p-6 flex flex-col items-center text-center hover:shadow-card hover:border-panther-red/20 transition-all group">
-              <div className="w-14 h-14 bg-zinc-200/70 rounded-xl flex items-center justify-center mb-3 group-hover:bg-panther-red/8 transition-colors">
-                <span className="text-2xl font-black text-zinc-400 group-hover:text-panther-red/50 transition-colors">
-                  {client.name.charAt(0)}
-                </span>
+              <div className="w-14 h-14 bg-zinc-200/70 rounded-xl flex items-center justify-center mb-3 overflow-hidden group-hover:bg-panther-red/8 transition-colors">
+                {client.logo ? (
+                  <Image
+                    src={client.logo}
+                    alt={client.name}
+                    width={56}
+                    height={56}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="text-2xl font-black text-zinc-400 group-hover:text-panther-red/50 transition-colors">
+                    {client.name.charAt(0)}
+                  </span>
+                )}
               </div>
               <p className="font-semibold text-panther-black text-sm">{client.name}</p>
               <p className="text-xs text-zinc-400 mt-0.5">{client.category}</p>

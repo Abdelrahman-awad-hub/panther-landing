@@ -1,8 +1,8 @@
 import { useTranslations } from 'next-intl'
-import { Truck, MapPin, Upload, Wallet, Globe, Tag } from 'lucide-react'
+import { Truck, MapPin, Upload, Wallet, Globe, Split } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
-const icons: LucideIcon[] = [Truck, MapPin, Upload, Wallet, Globe, Tag]
+const icons: LucideIcon[] = [Truck, MapPin, Upload, Wallet, Globe, Split]
 const itemKeys = ['0','1','2','3','4','5'] as const
 
 export function ServicesSection() {

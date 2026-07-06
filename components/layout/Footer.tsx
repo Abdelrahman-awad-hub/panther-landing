@@ -16,9 +16,7 @@ export function Footer() {
           </div>
           <div className="flex items-center gap-6 flex-wrap justify-center">
             <Link href={`/${locale}/track`} className="text-white hover:text-white/70 text-sm transition-colors">{t('track')}</Link>
-            <a href="#" className="text-white hover:text-white/70 text-sm transition-colors">{t('privacy')}</a>
-            <a href="#" className="text-white hover:text-white/70 text-sm transition-colors">{t('terms')}</a>
-            <a href="#" className="text-white hover:text-white/70 text-sm transition-colors">{t('contact')}</a>
+            <Link href={`/${locale}/contact`} className="text-white hover:text-white/70 text-sm transition-colors">{t('contact')}</Link>
           </div>
         </div>
         <div className="border-t border-white/8 mt-8 pt-6 text-center">
