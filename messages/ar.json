@@ -109,6 +109,9 @@
     "brandNamePlaceholder": "مثال: متجر نفرتيتي",
     "phone": "رقم الموبايل",
     "phonePlaceholder": "+20 1XX XXX XXXX",
+    "city": "المحافظة",
+    "cityPlaceholder": "اختار محافظتك",
+    "cityRequired": "اختار محافظتك",
     "volume": "حجم الشحنات في الشهر",
     "volumePlaceholder": "قد إيه بتشحن في الشهر؟",
     "volume300": "لحد 300 شحنة / شهر",
@@ -129,6 +132,13 @@
     "phoneInvalid": "اكتب رقم موبايل مصري صح",
     "volumeRequired": "اختار حجم شحناتك في الشهر",
     "urlInvalid": "اكتب لينك صح (يبدأ بـ https://)"
+  },
+  "sellerCta": {
+    "pill": "سجّل كتاجر · ٢٤س",
+    "pillShort": "سجّل · ٢٤س",
+    "modalTitle": "ابدأ تبيع مع Panther",
+    "modalSubtitle": "سيب بياناتك وفريقنا هيكلّمك خلال 24 ساعة بأفضل خطة على قد حجم شغلك.",
+    "close": "إغلاق"
   },
   "social": {
     "label": "روابط السوشيال ميديا",

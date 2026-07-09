@@ -109,6 +109,9 @@
     "brandNamePlaceholder": "e.g. Nefertiti Store",
     "phone": "Phone Number",
     "phonePlaceholder": "+20 1XX XXX XXXX",
+    "city": "City / Governorate",
+    "cityPlaceholder": "Choose your governorate",
+    "cityRequired": "Please select your governorate",
     "volume": "Monthly Shipment Volume",
     "volumePlaceholder": "Choose your monthly shipping volume",
     "volume300": "Up to 300 shipments / month",
@@ -129,6 +132,13 @@
     "phoneInvalid": "Please enter a valid Egyptian phone number",
     "volumeRequired": "Please select your monthly shipment volume",
     "urlInvalid": "Please enter a valid URL (starting with https://)"
+  },
+  "sellerCta": {
+    "pill": "Become a Seller · 24H",
+    "pillShort": "Join · 24H",
+    "modalTitle": "Start Selling with Panther",
+    "modalSubtitle": "Leave your details and our team reaches out within 24 hours with the best plan for your size.",
+    "close": "Close"
   },
   "social": {
     "label": "Social media links",

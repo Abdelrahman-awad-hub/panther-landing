@@ -7,6 +7,7 @@ import { ShopifyIntegrationSection } from '@/components/sections/ShopifyIntegrat
 import { ClientsSection } from '@/components/sections/Clients'
 import { SellerHighlightsSection } from '@/components/sections/SellerHighlights'
 import { LeadFormSection } from '@/components/sections/LeadForm'
+import { SellerCTA } from '@/components/sections/SellerCTA'
 import { SocialDock } from '@/components/ui/SocialDock'
 import { env } from '@/lib/env'
 
@@ -25,6 +26,7 @@ export default function HomePage() {
         <SellerHighlightsSection sellerPortalUrl={sellerPortalUrl} />
         <LeadFormSection />
       </main>
+      <SellerCTA />
       <SocialDock />
       <Footer />
     </>
