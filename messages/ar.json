@@ -49,16 +49,8 @@
     "feature3Desc": "حالة التوصيل وأرقام التتبع بتتحدّث على أوردرات Shopify بتاعتك.",
     "ctaSetup": "شوف خطوات الربط",
     "modalTitle": "إزاي تربط Shopify بـ Panther",
-    "modalSubtitle": "امشي على الخطوات دي عشان تربط متجرك. فيديو شرح كامل جايلك قريب.",
-    "step1Title": "افتح لوحة تحكم Shopify",
-    "step1Desc": "سجّل دخول لمتجرك على Shopify وروح على Settings ← Apps and sales channels.",
-    "step2Title": "ضيف تطبيق Panther",
-    "step2Desc": "دوّر على Panther في متجر تطبيقات Shopify وثبّته على متجرك.",
-    "step3Title": "اربط حساب Panther",
-    "step3Desc": "سجّل دخول ببيانات حساب البائع في Panther وادّي صلاحية للربط.",
-    "step4Title": "ابدأ مزامنة الأوردرات",
-    "step4Desc": "أوردراتك دلوقتي بتتزامن أوتوماتيك. اتحكم في شحناتك من لوحة Panther.",
-    "videoLabel": "فيديو الشرح جايلك قريب",
+    "modalSubtitle": "اتفرّج على الفيديو ده وهيوريك خطوات ربط متجرك.",
+    "contactHelp": "واجهت أي مشكلة؟ كلّمنا وإحنا هنساعدك تكمّل الربط.",
     "modalClose": "إغلاق"
   },
   "services": {

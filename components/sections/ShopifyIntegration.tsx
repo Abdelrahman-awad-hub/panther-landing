@@ -4,12 +4,12 @@ import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
-import { ShoppingBag, RefreshCw, Zap, MapPin, ArrowRight, X, Play } from 'lucide-react'
+import { ShoppingBag, RefreshCw, Zap, MapPin, ArrowRight, X, MessageCircle } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
 const featureIcons: LucideIcon[] = [RefreshCw, Zap, MapPin]
 const featureKeys = ['1', '2', '3'] as const
-const stepKeys = ['1', '2', '3', '4'] as const
+const CONTACT_URL = 'https://wa.me/201070782785'
 
 function ShopifyLogo({ className = '' }: { className?: string }) {
   return (
@@ -147,28 +147,30 @@ export function ShopifyIntegrationSection() {
               </h3>
               <p className="text-zinc-500 leading-relaxed mb-8">{t('modalSubtitle')}</p>
 
-              {/* Video placeholder — swap for a real embed later */}
-              <div className="relative aspect-video w-full rounded-2xl bg-panther-black overflow-hidden mb-8 flex flex-col items-center justify-center">
-                <div className="w-16 h-16 rounded-full bg-panther-red/90 flex items-center justify-center mb-3">
-                  <Play size={26} className="text-white ms-1" fill="currentColor" />
-                </div>
-                <span className="text-white/50 text-sm font-medium">{t('videoLabel')}</span>
+              {/* Video embed */}
+              <div className="relative aspect-video w-full rounded-2xl bg-panther-black overflow-hidden mb-8">
+                <iframe
+                  className="absolute inset-0 h-full w-full"
+                  src="https://www.youtube.com/embed/Vc9mWF8giFM"
+                  title={t('modalTitle')}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                />
               </div>
 
-              {/* Steps */}
-              <ol className="space-y-5">
-                {stepKeys.map((n) => (
-                  <li key={n} className="flex gap-4">
-                    <div className="w-8 h-8 shrink-0 rounded-full bg-panther-red text-white font-bold text-sm flex items-center justify-center">
-                      {n}
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-panther-black text-sm mb-0.5">{t(`step${n}Title`)}</h4>
-                      <p className="text-sm text-zinc-500 leading-relaxed">{t(`step${n}Desc`)}</p>
-                    </div>
-                  </li>
-                ))}
-              </ol>
+              {/* Contact */}
+              <a
+                href={CONTACT_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 rounded-2xl bg-[#F9F8F7] border border-zinc-100 px-5 py-4 hover:border-panther-red/30 transition-colors group"
+              >
+                <div className="w-10 h-10 shrink-0 rounded-xl bg-panther-red/10 flex items-center justify-center">
+                  <MessageCircle size={18} className="text-panther-red" />
+                </div>
+                <span className="text-sm text-zinc-600 leading-relaxed flex-1">{t('contactHelp')}</span>
+                <ArrowRight size={16} className="text-panther-red shrink-0 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 rtl:rotate-180 transition-transform" />
+              </a>
             </div>
           </div>
         </div>

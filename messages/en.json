@@ -49,16 +49,8 @@
     "feature3Desc": "Live delivery status and tracking numbers update on your Shopify orders.",
     "ctaSetup": "View Setup Guide",
     "modalTitle": "How to Connect Shopify to Panther",
-    "modalSubtitle": "Follow these steps to link your store. A full video walkthrough is coming soon.",
-    "step1Title": "Open your Shopify admin",
-    "step1Desc": "Log in to your Shopify store and go to Settings → Apps and sales channels.",
-    "step2Title": "Add the Panther app",
-    "step2Desc": "Search for Panther in the Shopify App Store and install it into your store.",
-    "step3Title": "Connect your Panther account",
-    "step3Desc": "Sign in with your Panther seller credentials and authorize the connection.",
-    "step4Title": "Start syncing orders",
-    "step4Desc": "Your orders now sync automatically. Manage shipments from your Panther dashboard.",
-    "videoLabel": "Video walkthrough coming soon",
+    "modalSubtitle": "Just follow this quick video to connect your store.",
+    "contactHelp": "Ran into any issue? Contact us and we'll help you set it up.",
     "modalClose": "Close"
   },
   "services": {
