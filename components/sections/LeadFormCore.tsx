@@ -219,69 +219,68 @@ export function LeadFormCore({ source = 'section', onSuccess, autoFocus = false 
         </div>
       </div>
 
-      {/* City + Volume */}
-      <div className="grid sm:grid-cols-2 gap-4">
-        <div className="space-y-1.5">
-          <Label className="text-gray-600 font-medium text-xs tracking-wide uppercase">
-            {t('city')} <span className="text-panther-red">*</span>
-          </Label>
-          <Controller
-            control={control}
-            name="city"
-            rules={{ required: true }}
-            render={({ field }) => (
-              <Select onValueChange={field.onChange} value={field.value ?? ''}>
-                <SelectTrigger className={`${fieldClass} w-full`}>
-                  <SelectValue placeholder={t('cityPlaceholder')} />
-                </SelectTrigger>
-                <SelectContent className="bg-white border-gray-200 text-gray-900 max-h-64">
-                  {GOVERNORATES.map((g) => (
-                    <SelectItem
-                      key={g.value} value={g.value}
-                      className="text-gray-900 focus:bg-gray-50 focus:text-gray-900"
-                    >
-                      {isAr ? g.ar : g.value}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-          />
+      {/* City */}
+      <div className="space-y-1.5">
+        <Label className="text-gray-600 font-medium text-xs tracking-wide uppercase">
+          {t('city')} <span className="text-panther-red">*</span>
+        </Label>
+        <Controller
+          control={control}
+          name="city"
+          rules={{ required: true }}
+          render={({ field }) => (
+            <Select onValueChange={field.onChange} value={field.value ?? ''}>
+              <SelectTrigger className={`${fieldClass} w-full`}>
+                <SelectValue placeholder={t('cityPlaceholder')} />
+              </SelectTrigger>
+              <SelectContent className="bg-white border-gray-200 text-gray-900 max-h-64">
+                {GOVERNORATES.map((g) => (
+                  <SelectItem
+                    key={g.value} value={g.value}
+                    className="text-gray-900 focus:bg-gray-50 focus:text-gray-900"
+                  >
+                    {isAr ? g.ar : g.value}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        />
           {errors.city && (
-            <p className="text-panther-red text-xs mt-1">{t('cityRequired')}</p>
-          )}
-        </div>
+          <p className="text-panther-red text-xs mt-1">{t('cityRequired')}</p>
+        )}
+      </div>
 
-        <div className="space-y-1.5">
-          <Label className="text-gray-600 font-medium text-xs tracking-wide uppercase">
-            {t('volume')} <span className="text-panther-red">*</span>
-          </Label>
-          <Controller
-            control={control}
-            name="volumeCategory"
-            rules={{ required: true }}
-            render={({ field }) => (
-              <Select onValueChange={field.onChange} value={field.value ?? ''}>
-                <SelectTrigger className={`${fieldClass} w-full`}>
-                  <SelectValue placeholder={t('volumePlaceholder')} />
-                </SelectTrigger>
-                <SelectContent className="bg-white border-gray-200 text-gray-900">
-                  {VOLUME_KEYS.map((k) => (
-                    <SelectItem
-                      key={k} value={k}
-                      className="text-gray-900 focus:bg-gray-50 focus:text-gray-900"
-                    >
-                      {t(`volume${k}`)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-          />
-          {errors.volumeCategory && (
-            <p className="text-panther-red text-xs mt-1">{t('volumeRequired')}</p>
+      {/* Volume */}
+      <div className="space-y-1.5">
+        <Label className="text-gray-600 font-medium text-xs tracking-wide uppercase">
+          {t('volume')} <span className="text-panther-red">*</span>
+        </Label>
+        <Controller
+          control={control}
+          name="volumeCategory"
+          rules={{ required: true }}
+          render={({ field }) => (
+            <Select onValueChange={field.onChange} value={field.value ?? ''}>
+              <SelectTrigger className={`${fieldClass} w-full`}>
+                <SelectValue placeholder={t('volumePlaceholder')} />
+              </SelectTrigger>
+              <SelectContent className="bg-white border-gray-200 text-gray-900">
+                {VOLUME_KEYS.map((k) => (
+                  <SelectItem
+                    key={k} value={k}
+                    className="text-gray-900 focus:bg-gray-50 focus:text-gray-900"
+                  >
+                    {t(`volume${k}`)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           )}
-        </div>
+        />
+        {errors.volumeCategory && (
+          <p className="text-panther-red text-xs mt-1">{t('volumeRequired')}</p>
+        )}
       </div>
 
       {/* Social + Website */}

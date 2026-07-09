@@ -20,6 +20,7 @@ export async function appendLeadToSheet(data: LeadSubmission): Promise<void> {
     data.submittedAt ?? new Date().toISOString(),
     data.brandName,
     data.phone,
+    data.city,
     data.volumeCategory,
     data.socialLink  ?? '',
     data.websiteUrl  ?? '',
@@ -31,7 +32,6 @@ export async function appendLeadToSheet(data: LeadSubmission): Promise<void> {
     data.utmTerm     ?? '',
     data.utmContent  ?? '',
     data.userAgent   ?? '',
-    data.city,
   ]
   await sheets.spreadsheets.values.append({
     spreadsheetId: env.google.sheetId,
