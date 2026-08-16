@@ -14,7 +14,7 @@ const cairo = Cairo({ subsets: ['arabic'], variable: '--font-cairo' })
 export const metadata: Metadata = {
   title: 'Panther Express — Ship Faster, Grow Bigger',
   description: "Egypt's trusted logistics partner for e-commerce brands and growing merchants.",
-  icons: { icon: '/panthe-logo.png' },
+  icons: { icon: '/favicon.svg' },
 }
 
 export default async function LocaleLayout({
