@@ -13,6 +13,6 @@ export const clients: Client[] = [
   { id: 'sparko',  name: 'Sparko',         category: 'Accessories',               logo: '/brands/sparko.png' },
   { id: 'beautiful', name: "It's Beautiful", category: 'Cosmetics & Fragrances' },
   { id: 'firstorder', name: 'One Bond', category: 'Cosmetics',              logo: '/brands/oneBond2.jpg' },
-  { id: 'sportone', name: 'Sport One',     category: 'Sportswear & Equipment',    logo: '/brands/sportOne.avif' },
+  { id: 'sportone', name: 'Sport One',     category: 'Sportswear & Equipment',    logo: '/brands/SportsOne.png' },
   { id: 'point',   name: 'Point Chemical', category: 'Automotive Spare Parts',    logo: '/brands/point.jpg' },
 ]
