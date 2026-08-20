@@ -33,10 +33,12 @@ export default async function LocaleLayout({
 
   return (
     <html lang={locale} dir={dir}>
-      <GoogleTagManager gtmId={process.env.NEXT_PUBLIC_GTM_ID!} />
+      {process.env.NEXT_PUBLIC_GTM_ID && (
+        <GoogleTagManager gtmId={process.env.NEXT_PUBLIC_GTM_ID} />
+      )}
       <body className={`${inter.variable} ${cairo.variable} antialiased`}>
-        <GtmPageview />
         <NextIntlClientProvider messages={messages}>
+          <GtmPageview />
           {children}
         </NextIntlClientProvider>
       </body>

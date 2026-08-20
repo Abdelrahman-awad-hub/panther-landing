@@ -35,10 +35,13 @@ export async function appendLeadToSheet(data: LeadSubmission): Promise<void> {
     data.leadId,
     data.formSource,
     data.locale,
+    data.gclid,
+    data.fbclid,
+    data.ttclid,
   ]
   await sheets.spreadsheets.values.append({
     spreadsheetId: env.google.sheetId,
-    range: 'Sheet1!A:R',
+    range: 'Sheet1!A:U',
     valueInputOption: 'RAW',
     requestBody: { values: [row] },
   })

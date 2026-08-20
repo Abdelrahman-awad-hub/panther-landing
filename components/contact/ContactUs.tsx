@@ -4,6 +4,7 @@ import { useTranslations, useLocale } from 'next-intl'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { MessageCircle, Mail, Phone, ArrowRight } from 'lucide-react'
+import { trackEvent } from '@/lib/analytics'
 
 const WHATSAPP_URL = 'https://wa.me/201070782785'
 const PHONE_DISPLAY = '+20 107 078 2785'
@@ -47,6 +48,7 @@ export function ContactUs() {
 
   const methods = [
     {
+      method: 'whatsapp',
       Icon: MessageCircle,
       title: t('whatsappTitle'),
       desc: t('whatsappDesc'),
@@ -56,6 +58,7 @@ export function ContactUs() {
       external: true,
     },
     {
+      method: 'email',
       Icon: Mail,
       title: t('emailTitle'),
       desc: t('emailDesc'),
@@ -65,6 +68,7 @@ export function ContactUs() {
       external: false,
     },
     {
+      method: 'phone',
       Icon: Phone,
       title: t('phoneTitle'),
       desc: t('phoneDesc'),
@@ -105,6 +109,12 @@ export function ContactUs() {
                 key={m.title}
                 href={m.href}
                 {...(m.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                onClick={() => trackEvent('contact_click', {
+                  contact_method: m.method,
+                  contact_location: 'contact_page',
+                  link_url: m.href,
+                  language: locale,
+                })}
                 className="group bg-white shadow-card border border-zinc-100 rounded-2xl p-7 hover:shadow-card-hover hover:border-panther-red/20 transition-all flex flex-col"
               >
                 <div className="w-12 h-12 bg-panther-red/10 rounded-xl flex items-center justify-center mb-5 group-hover:bg-panther-red/18 transition-colors">
@@ -135,6 +145,12 @@ export function ContactUs() {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={name}
+                    onClick={() => trackEvent('contact_click', {
+                      contact_method: name.toLowerCase(),
+                      contact_location: 'contact_page_socials',
+                      link_url: href,
+                      language: locale,
+                    })}
                     className="w-11 h-11 rounded-xl bg-[#F9F8F7] border border-zinc-100 flex items-center justify-center text-panther-black hover:bg-panther-red hover:text-white hover:border-panther-red transition-colors"
                   >
                     {icon}
@@ -153,7 +169,11 @@ export function ContactUs() {
             <span className="text-panther-red text-sm font-medium">{t('ctaBadge')}</span>
           </div>
           <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight mb-8">{t('ctaTitle')}</h2>
-          <Link href={`/${locale}#join`}>
+          <Link href={`/${locale}#join`} onClick={() => trackEvent('cta_click', {
+            cta_name: 'join_now',
+            cta_location: 'contact_page',
+            language: locale,
+          })}>
             <Button size="lg" className="bg-panther-red hover:bg-panther-red-dark text-white font-bold px-8 group">
               {t('ctaButton')}
               <ArrowRight size={18} className="ms-2 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 rtl:rotate-180 transition-transform" />

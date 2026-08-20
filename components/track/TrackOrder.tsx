@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useTranslations, useLocale } from 'next-intl'
-import { sendGTMEvent } from '@next/third-parties/google'
 import { Search, AlertCircle, Loader2, PackageSearch } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -13,6 +12,7 @@ import { StatusStepper } from './StatusStepper'
 import { StatusTimeline } from './StatusTimeline'
 import { STAGE_ICON, stageTone, TONE_CLASSES } from './stage-visual'
 import { cn } from '@/lib/utils'
+import { trackEvent } from '@/lib/analytics'
 
 type Phase = 'idle' | 'loading' | 'found' | 'invalid' | 'not_found' | 'rate_limited' | 'error'
 
@@ -38,10 +38,14 @@ export function TrackOrder() {
     const value = raw.trim()
     if (value.length < 3) {
       setPhase('invalid')
+      trackEvent('shipment_track_result', {
+        tracking_outcome: 'invalid',
+        language: locale,
+      })
       return
     }
     setPhase('loading')
-    sendGTMEvent({ event: 'track_search' })
+    trackEvent('shipment_track_search', { language: locale })
     try {
       const res = await fetch('/api/track', {
         method: 'POST',
@@ -52,14 +56,27 @@ export function TrackOrder() {
         const data = (await res.json()) as TrackResult
         setResult(data)
         setPhase('found')
-        sendGTMEvent({ event: 'track_result', track_status: data.currentStage })
+        trackEvent('shipment_track_result', {
+          tracking_outcome: 'found',
+          track_status: data.currentStage,
+          language: locale,
+        })
         return
       }
-      setPhase(ERROR_PHASE[res.status] ?? 'error')
+      const errorPhase = ERROR_PHASE[res.status] ?? 'error'
+      setPhase(errorPhase)
+      trackEvent('shipment_track_result', {
+        tracking_outcome: errorPhase,
+        language: locale,
+      })
     } catch {
       setPhase('error')
+      trackEvent('shipment_track_result', {
+        tracking_outcome: 'network_error',
+        language: locale,
+      })
     }
-  }, [])
+  }, [locale])
 
   // Deep-link support: ?waybill=WY154830 pre-fills and auto-tracks.
   const autoRan = useRef(false)

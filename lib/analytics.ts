@@ -11,8 +11,15 @@ const EVENT_FIELDS = [
   'form_name',
   'form_source',
   'lead_id',
+  'event_id',
   'language',
   'link_url',
+  'lead_source',
+  'tracking_outcome',
+  'track_status',
+  'error_type',
+  'error_fields',
+  'volume_category',
 ] as const
 
 /**
@@ -24,7 +31,11 @@ export function trackEvent(event: string, payload: AnalyticsPayload = {}) {
   if (typeof window === 'undefined') return
 
   const resetFields = Object.fromEntries(EVENT_FIELDS.map((field) => [field, null]))
+  const pageContext = {
+    page_path: window.location.pathname,
+    page_location: window.location.href,
+    page_title: document.title,
+  }
   window.dataLayer = window.dataLayer ?? []
-  window.dataLayer.push({ ...resetFields, ...payload, event })
+  window.dataLayer.push({ ...resetFields, ...pageContext, ...payload, event })
 }
-

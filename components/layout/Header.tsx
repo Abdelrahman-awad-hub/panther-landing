@@ -63,6 +63,7 @@ export function Header({ sellerPortalUrl }: HeaderProps) {
           {/* Desktop CTAs */}
           <div className="hidden lg:flex items-center gap-3">
             <Link href={switchPath}
+              onClick={() => trackEvent('language_switch', { language: otherLocale })}
               className="text-sm font-medium text-gray-400 hover:text-panther-black transition-colors px-1">
               {otherLocale === 'ar' ? 'العربية' : 'English'}
             </Link>
@@ -109,7 +110,7 @@ export function Header({ sellerPortalUrl }: HeaderProps) {
               {t('contact')}
             </Link>
             <div className="pt-4 flex flex-col gap-2.5">
-              <Link href={switchPath} className="text-gray-400 hover:text-panther-black text-sm transition-colors">
+              <Link href={switchPath} onClick={() => trackEvent('language_switch', { language: otherLocale })} className="text-gray-400 hover:text-panther-black text-sm transition-colors">
                 {otherLocale === 'ar' ? 'العربية' : 'English'}
               </Link>
               <a href={sellerPortalUrl} target="_blank" rel="noopener noreferrer"
