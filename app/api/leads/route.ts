@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { LeadSubmissionSchema } from '@/lib/lead-schema'
 import { appendLeadToSheet } from '@/lib/google-sheets'
+import { sendLeadConversions } from '@/lib/conversions-api'
+
+export const runtime = 'nodejs'
 
 export async function POST(request: NextRequest) {
   try {
@@ -26,6 +29,8 @@ export async function POST(request: NextRequest) {
     }
 
     await appendLeadToSheet(result.data)
+    const conversionDelivery = await sendLeadConversions(result.data)
+    console.info('[leads] conversion delivery:', conversionDelivery)
     return NextResponse.json({ success: true, leadId })
   } catch (error) {
     console.error('[leads] submission error:', error)

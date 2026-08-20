@@ -20,6 +20,7 @@ const EVENT_FIELDS = [
   'error_type',
   'error_fields',
   'volume_category',
+  'marketing_consent',
 ] as const
 
 /**
