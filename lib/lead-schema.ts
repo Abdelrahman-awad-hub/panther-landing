@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
 export const LeadSubmissionSchema = z.object({
+  leadId: z.string().uuid(),
   brandName: z.string().min(1),
   phone: z
     .string()
@@ -17,6 +18,8 @@ export const LeadSubmissionSchema = z.object({
   utmCampaign: z.string().optional().default(''),
   utmTerm:     z.string().optional().default(''),
   utmContent:  z.string().optional().default(''),
+  formSource:  z.string().max(50).optional().default('section'),
+  locale:      z.enum(['ar', 'en']).optional().default('en'),
   userAgent:   z.string().optional().default(''),
   submittedAt: z.string().optional(),
   website_confirm: z.string().max(0).optional(),

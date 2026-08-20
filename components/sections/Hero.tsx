@@ -4,6 +4,7 @@ import { useTranslations, useLocale } from 'next-intl'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Zap, ArrowRight } from 'lucide-react'
+import { trackEvent } from '@/lib/analytics'
 
 export function HeroSection() {
   const t = useTranslations('hero')
@@ -46,7 +47,7 @@ export function HeroSection() {
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row gap-4">
             <a href="#join"
-              onClick={() => window.dataLayer?.push({ event: 'cta_click', cta_name: 'join_now', cta_location: 'hero' })}>
+              onClick={() => trackEvent('cta_click', { cta_name: 'join_now', cta_location: 'hero', language: locale })}>
               <Button size="lg"
                 className="bg-panther-red hover:bg-panther-red-dark text-white font-bold px-8 text-base group w-full sm:w-auto">
                 {t('ctaPrimary')}
@@ -54,7 +55,7 @@ export function HeroSection() {
               </Button>
             </a>
             <Link href={`/${locale}/track`}
-              onClick={() => window.dataLayer?.push({ event: 'cta_click', cta_name: 'track_order', cta_location: 'hero' })}>
+              onClick={() => trackEvent('cta_click', { cta_name: 'track_order', cta_location: 'hero', language: locale })}>
               <Button size="lg" variant="outline"
                 className="border-white/25 text-white hover:bg-white/10 hover:text-white bg-transparent font-medium px-8 text-base w-full sm:w-auto">
                 {t('ctaSecondary')}

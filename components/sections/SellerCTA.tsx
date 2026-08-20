@@ -1,13 +1,14 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { useTranslations } from 'next-intl'
-import { sendGTMEvent } from '@next/third-parties/google'
+import { useLocale, useTranslations } from 'next-intl'
 import { Zap } from 'lucide-react'
 import { LeadFormModal } from './LeadFormModal'
+import { trackEvent } from '@/lib/analytics'
 
 export function SellerCTA() {
   const t = useTranslations('sellerCta')
+  const locale = useLocale()
   const [scrolledPastHero, setScrolledPastHero] = useState(false)
   const [formInView, setFormInView] = useState(false)
   const [modalOpen, setModalOpen] = useState(false)
@@ -37,7 +38,11 @@ export function SellerCTA() {
 
   const openModal = () => {
     setModalOpen(true)
-    sendGTMEvent({ event: 'cta_click', cta: 'floating_seller' })
+    trackEvent('cta_click', {
+      cta_name: 'join_now',
+      cta_location: 'floating_seller',
+      language: locale,
+    })
   }
 
   const closeModal = () => {

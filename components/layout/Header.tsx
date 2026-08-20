@@ -7,6 +7,7 @@ import { usePathname } from 'next/navigation'
 import { Menu, X } from 'lucide-react'
 import { Logo } from '@/components/ui/Logo'
 import { Button } from '@/components/ui/button'
+import { trackEvent } from '@/lib/analytics'
 
 const NAV_SECTIONS = ['services', 'about', 'clients'] as const
 
@@ -66,14 +67,14 @@ export function Header({ sellerPortalUrl }: HeaderProps) {
               {otherLocale === 'ar' ? 'العربية' : 'English'}
             </Link>
             <a href={sellerPortalUrl} target="_blank" rel="noopener noreferrer"
-              onClick={() => window.dataLayer?.push({ event: 'cta_click', cta_name: 'seller_login', cta_location: 'header' })}>
+              onClick={() => trackEvent('cta_click', { cta_name: 'seller_login', cta_location: 'header', language: locale, link_url: sellerPortalUrl })}>
               <Button variant="outline" size="sm"
                 className="border-gray-300 text-panther-black hover:bg-gray-50 hover:text-panther-black bg-transparent h-9 px-4 text-sm">
                 {t('sellerLogin')}
               </Button>
             </a>
             <a href={`/${locale}#join`}
-              onClick={() => window.dataLayer?.push({ event: 'cta_click', cta_name: 'join_now', cta_location: 'header' })}>
+              onClick={() => trackEvent('cta_click', { cta_name: 'join_now', cta_location: 'header', language: locale })}>
               <Button size="sm" className="bg-panther-red hover:bg-panther-red-dark text-white h-9 px-5 text-sm font-semibold">
                 {t('becomeASeller')}
               </Button>
@@ -112,12 +113,12 @@ export function Header({ sellerPortalUrl }: HeaderProps) {
                 {otherLocale === 'ar' ? 'العربية' : 'English'}
               </Link>
               <a href={sellerPortalUrl} target="_blank" rel="noopener noreferrer"
-                onClick={() => window.dataLayer?.push({ event: 'cta_click', cta_name: 'seller_login', cta_location: 'header' })}>
+                onClick={() => trackEvent('cta_click', { cta_name: 'seller_login', cta_location: 'header', language: locale, link_url: sellerPortalUrl })}>
                 <Button variant="outline" className="w-full border-gray-300 text-panther-black hover:bg-gray-50 hover:text-panther-black bg-transparent">
                   {t('sellerLogin')}
                 </Button>
               </a>
-              <a href={`/${locale}#join`} onClick={() => { setOpen(false); window.dataLayer?.push({ event: 'cta_click', cta_name: 'join_now', cta_location: 'header' }) }}>
+              <a href={`/${locale}#join`} onClick={() => { setOpen(false); trackEvent('cta_click', { cta_name: 'join_now', cta_location: 'header', language: locale }) }}>
                 <Button className="w-full bg-panther-red hover:bg-panther-red-dark text-white font-semibold">
                   {t('becomeASeller')}
                 </Button>

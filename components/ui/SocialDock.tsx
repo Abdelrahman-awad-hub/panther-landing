@@ -1,8 +1,9 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { Mail, X } from 'lucide-react'
+import { trackEvent } from '@/lib/analytics'
 
 type Social = {
   key: string
@@ -65,6 +66,7 @@ const SOCIALS: Social[] = [
 
 export function SocialDock() {
   const t = useTranslations('social')
+  const locale = useLocale()
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
 
@@ -104,7 +106,12 @@ export function SocialDock() {
               aria-label={t(s.key)}
               tabIndex={open ? 0 : -1}
               onClick={() => {
-                window.dataLayer?.push({ event: 'social_click', platform: s.key })
+                trackEvent('contact_click', {
+                  contact_method: s.key,
+                  contact_location: 'floating_dock',
+                  link_url: s.href,
+                  language: locale,
+                })
                 setOpen(false)
               }}
               style={{
