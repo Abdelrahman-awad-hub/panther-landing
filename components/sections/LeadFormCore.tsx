@@ -5,6 +5,7 @@ import { useForm, Controller } from 'react-hook-form'
 import { useTranslations, useLocale } from 'next-intl'
 import { AlertCircle } from 'lucide-react'
 import { trackEvent } from '@/lib/analytics'
+import { captureLeadAttribution } from '@/lib/attribution'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -67,18 +68,6 @@ export const PITCH_POINTS = [
   { en: 'Transparent pricing, no hidden fees', ar: 'أسعار واضحة بدون رسوم مخفية' },
 ]
 
-function readUTMs(): Record<string, string> {
-  if (typeof window === 'undefined') return {}
-  const p = new URLSearchParams(window.location.search)
-  return {
-    utmSource:   p.get('utm_source')   ?? '',
-    utmMedium:   p.get('utm_medium')   ?? '',
-    utmCampaign: p.get('utm_campaign') ?? '',
-    utmTerm:     p.get('utm_term')     ?? '',
-    utmContent:  p.get('utm_content')  ?? '',
-  }
-}
-
 type LeadFormCoreProps = {
   /** Where the form is rendered — used for GTM attribution. */
   source?: string
@@ -93,15 +82,6 @@ export function LeadFormCore({ source = 'section', onSuccess, autoFocus = false 
   const locale = useLocale()
   const isAr = locale === 'ar'
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle')
-  const [attribution, setAttribution] = useState<Record<string, string>>({})
-
-  useEffect(() => {
-    setAttribution({
-      referrerUrl: document.referrer,
-      landingUrl: window.location.href,
-      ...readUTMs(),
-    })
-  }, [])
 
   const [honeypot, setHoneypot] = useState('')
   const { handleSubmit, control, setFocus, formState: { errors, isSubmitting } } = useForm<FormData>({
@@ -136,7 +116,7 @@ export function LeadFormCore({ source = 'section', onSuccess, autoFocus = false 
           website_confirm: honeypot,
           formSource: source,
           locale,
-          ...attribution,
+          ...captureLeadAttribution(),
         }),
       })
       if (!res.ok) throw new Error()
@@ -147,12 +127,30 @@ export function LeadFormCore({ source = 'section', onSuccess, autoFocus = false 
         form_name: 'seller_application',
         form_source: source,
         lead_id: data.leadId,
+        event_id: data.leadId,
+        lead_source: source,
+        volume_category: values.volumeCategory,
         language: locale,
       })
       onSuccess?.()
-    } catch {
+    } catch (error) {
       setStatus('error')
+      trackEvent('lead_form_error', {
+        form_name: 'seller_application',
+        form_source: source,
+        error_type: error instanceof TypeError ? 'network' : 'submission',
+        language: locale,
+      })
     }
+  }
+
+  const onInvalid = (invalidFields: Record<string, unknown>) => {
+    trackEvent('lead_form_validation_error', {
+      form_name: 'seller_application',
+      form_source: source,
+      error_fields: Object.keys(invalidFields).sort().join(','),
+      language: locale,
+    })
   }
 
   if (status === 'success') {
@@ -170,7 +168,7 @@ export function LeadFormCore({ source = 'section', onSuccess, autoFocus = false 
 
   return (
     <form
-      onSubmit={handleSubmit(onSubmit)}
+      onSubmit={handleSubmit(onSubmit, onInvalid)}
       onInput={handleFormStart}
       dir={isAr ? 'rtl' : 'ltr'}
       className="space-y-5"

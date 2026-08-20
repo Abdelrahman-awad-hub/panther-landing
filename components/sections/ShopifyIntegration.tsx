@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { ShoppingBag, RefreshCw, Zap, MapPin, ArrowRight, X, MessageCircle } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
+import { trackEvent } from '@/lib/analytics'
 
 const featureIcons: LucideIcon[] = [RefreshCw, Zap, MapPin]
 const featureKeys = ['1', '2', '3'] as const
@@ -21,6 +22,7 @@ function ShopifyLogo({ className = '' }: { className?: string }) {
 
 export function ShopifyIntegrationSection() {
   const t = useTranslations('shopify')
+  const locale = useLocale()
   const [open, setOpen] = useState(false)
 
   // Close on Escape + lock body scroll while the modal is open
@@ -71,7 +73,14 @@ export function ShopifyIntegrationSection() {
             </div>
 
             <Button
-              onClick={() => setOpen(true)}
+              onClick={() => {
+                setOpen(true)
+                trackEvent('cta_click', {
+                  cta_name: 'shopify_setup_guide',
+                  cta_location: 'shopify_section',
+                  language: locale,
+                })
+              }}
               className="bg-panther-red hover:bg-panther-red-dark text-white font-semibold px-6 group"
             >
               {t('ctaSetup')}
@@ -163,6 +172,12 @@ export function ShopifyIntegrationSection() {
                 href={CONTACT_URL}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() => trackEvent('contact_click', {
+                  contact_method: 'whatsapp',
+                  contact_location: 'shopify_modal',
+                  link_url: CONTACT_URL,
+                  language: locale,
+                })}
                 className="flex items-center gap-3 rounded-2xl bg-[#F9F8F7] border border-zinc-100 px-5 py-4 hover:border-panther-red/30 transition-colors group"
               >
                 <div className="w-10 h-10 shrink-0 rounded-xl bg-panther-red/10 flex items-center justify-center">

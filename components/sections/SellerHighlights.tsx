@@ -1,7 +1,10 @@
-import { useTranslations } from 'next-intl'
+'use client'
+
+import { useLocale, useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { ArrowRight, Package, Upload, MapPin, Printer } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
+import { trackEvent } from '@/lib/analytics'
 
 const featureIcons: LucideIcon[] = [Package, Upload, MapPin, Printer]
 const featureKeys = ['0','1','2','3'] as const
@@ -12,6 +15,7 @@ interface SellerHighlightsProps {
 
 export function SellerHighlightsSection({ sellerPortalUrl }: SellerHighlightsProps) {
   const t = useTranslations('sellerHighlights')
+  const locale = useLocale()
 
   return (
     <section id="portal" className="bg-white py-24 lg:py-32">
@@ -27,13 +31,22 @@ export function SellerHighlightsSection({ sellerPortalUrl }: SellerHighlightsPro
             </h2>
             <p className="text-lg text-zinc-500 leading-relaxed mb-8">{t('subtitle')}</p>
             <div className="flex flex-col sm:flex-row gap-3">
-              <a href="#join">
+              <a href="#join" onClick={() => trackEvent('cta_click', {
+                cta_name: 'join_now',
+                cta_location: 'seller_highlights',
+                language: locale,
+              })}>
                 <Button className="bg-panther-red hover:bg-panther-red-dark text-white font-semibold px-6 group">
                   {t('ctaJoin')}
                   <ArrowRight size={16} className="ms-2 group-hover:translate-x-1 rtl:group-hover:-translate-x-1 rtl:rotate-180 transition-transform" />
                 </Button>
               </a>
-              <a href={sellerPortalUrl} target="_blank" rel="noopener noreferrer">
+              <a href={sellerPortalUrl} target="_blank" rel="noopener noreferrer" onClick={() => trackEvent('cta_click', {
+                cta_name: 'seller_login',
+                cta_location: 'seller_highlights',
+                link_url: sellerPortalUrl,
+                language: locale,
+              })}>
                 <Button variant="outline" className="border-zinc-200 text-panther-black hover:bg-zinc-50">
                   {t('ctaLogin')}
                 </Button>
