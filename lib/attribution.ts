@@ -1,5 +1,7 @@
 'use client'
 
+import { readCookie } from '@/lib/marketing-consent'
+
 export type LeadAttribution = {
   referrerUrl: string
   landingUrl: string
@@ -11,6 +13,8 @@ export type LeadAttribution = {
   gclid: string
   fbclid: string
   ttclid: string
+  fbp: string
+  ttp: string
 }
 
 const STORAGE_KEY = 'panther_lead_attribution_v1'
@@ -28,6 +32,8 @@ function fromCurrentPage(): LeadAttribution {
     gclid: params.get('gclid') ?? '',
     fbclid: params.get('fbclid') ?? '',
     ttclid: params.get('ttclid') ?? '',
+    fbp: readCookie('_fbp'),
+    ttp: readCookie('_ttp'),
   }
 }
 
@@ -46,4 +52,3 @@ export function captureLeadAttribution(): LeadAttribution {
 
   return current
 }
-

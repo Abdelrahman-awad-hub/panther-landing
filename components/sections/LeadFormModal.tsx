@@ -18,7 +18,10 @@ export function LeadFormModal({ open, onClose }: LeadFormModalProps) {
   const [mounted, setMounted] = useState(false)
   const panelRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => setMounted(true), [])
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => setMounted(true))
+    return () => window.cancelAnimationFrame(frame)
+  }, [])
 
   // Close on Escape + lock background scroll while open.
   useEffect(() => {

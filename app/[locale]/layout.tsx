@@ -3,9 +3,9 @@ import { Inter, Cairo } from 'next/font/google'
 import { NextIntlClientProvider } from 'next-intl'
 import { getMessages } from 'next-intl/server'
 import { notFound } from 'next/navigation'
-import { GoogleTagManager } from '@next/third-parties/google'
 import { routing } from '@/i18n/routing'
 import { GtmPageview } from '@/components/gtm-pageview'
+import { ConsentAwareGtm } from '@/components/ConsentAwareGtm'
 import '../globals.css'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
@@ -33,11 +33,9 @@ export default async function LocaleLayout({
 
   return (
     <html lang={locale} dir={dir}>
-      {process.env.NEXT_PUBLIC_GTM_ID && (
-        <GoogleTagManager gtmId={process.env.NEXT_PUBLIC_GTM_ID} />
-      )}
       <body className={`${inter.variable} ${cairo.variable} antialiased`}>
         <NextIntlClientProvider messages={messages}>
+          <ConsentAwareGtm gtmId={process.env.NEXT_PUBLIC_GTM_ID} />
           <GtmPageview />
           {children}
         </NextIntlClientProvider>

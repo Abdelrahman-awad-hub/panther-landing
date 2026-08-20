@@ -15,13 +15,32 @@ never use GTM's native form-submit event.
 | `lead_form_validation_error` | A submit attempt fails browser validation | `form_name`, `form_source`, `error_fields`, `language` |
 | `lead_form_error` | The lead API does not confirm storage | `form_name`, `form_source`, `error_type`, `language` |
 | `panther_lead_success` | The API has validated and stored the lead | `lead_id`, `event_id`, `form_name`, `form_source`, `lead_source`, `volume_category`, `language` |
+| `consent_update` | The visitor saves an optional tracking choice | `marketing_consent`, `language` |
 | `shipment_track_search` | A valid tracking search starts | `language` |
 | `shipment_track_result` | A tracking search finishes | `tracking_outcome`, `track_status` when found, `language` |
 | `language_switch` | The visitor selects the other language | `language` (destination language) |
 
 Every event also contains `page_path`, `page_location`, and `page_title`.
 Customer phone numbers, brand names, entered URLs, and waybill numbers must
-never be sent to analytics or advertising platforms.
+never be sent to browser analytics or advertising tags. For consented server
+lead matching, only the normalized phone hash and non-sensitive identifiers
+listed below may be sent.
+
+## Consent and server-side conversion delivery
+
+- GTM is not loaded until the visitor accepts optional tracking. Rejecting it
+  never blocks the website or the lead form.
+- A stored lead is sent to Meta CAPI and TikTok Events API only when
+  `marketingConsent` is `true`.
+- Meta and TikTok receive the same `leadId` as the browser `event_id`, allowing
+  the platforms to deduplicate browser and server copies.
+- Phone and external ID are normalized and SHA-256 hashed on the server. API
+  tokens remain server-only. Brand name, city, social URL and website URL are
+  never included in advertising payloads.
+- Provider failures do not lose or duplicate the lead. They are logged without
+  tokens or submitted customer fields.
+- `META_TEST_EVENT_CODE` and `TIKTOK_TEST_EVENT_CODE` may be used only during
+  platform Test Events validation and must be removed before production.
 
 ## GTM migration
 
@@ -68,6 +87,7 @@ Create these variables exactly as written:
 - `DLV - page_path` → `page_path`
 - `DLV - page_location` → `page_location`
 - `DLV - page_title` → `page_title`
+- `DLV - marketing_consent` → `marketing_consent`
 
 ## GA4 event mapping
 
@@ -89,12 +109,12 @@ are diagnostic funnel steps, not primary conversions.
 
 ## Lead sheet columns
 
-The append order is A:U:
+The append order is A:V:
 
 `submittedAt`, `brandName`, `phone`, `city`, `volumeCategory`, `socialLink`,
 `websiteUrl`, `referrerUrl`, `landingUrl`, `utmSource`, `utmMedium`,
 `utmCampaign`, `utmTerm`, `utmContent`, `userAgent`, `leadId`, `formSource`,
-`locale`, `gclid`, `fbclid`, `ttclid`.
+`locale`, `gclid`, `fbclid`, `ttclid`, `marketingConsent`.
 
 ## Release verification
 
@@ -109,3 +129,6 @@ The append order is A:U:
   from the previous event.
 - Tag Assistant Console has no errors and all tags use the published container
   version intended for release.
+- Accept consent with an ad blocker enabled, submit one approved test lead and
+  verify that Meta/TikTok Test Events show the server event with the same
+  `event_id`. Reject consent and verify that neither server event is sent.

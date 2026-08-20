@@ -150,6 +150,13 @@
     "tiktok": "TikTok",
     "email": "Email"
   },
+  "consent": {
+    "title": "Your privacy choices",
+    "description": "With your permission, Panther uses analytics and advertising tools to measure campaign performance. A confirmed application may also be measured securely through Meta and TikTok server APIs using hashed matching data. You can reject optional tracking and still use the website and submit an application.",
+    "accept": "Accept optional tracking",
+    "reject": "Reject optional tracking",
+    "settings": "Privacy settings"
+  },
   "contactPage": {
     "badge": "Contact Us",
     "title": "Let's Talk Logistics",
