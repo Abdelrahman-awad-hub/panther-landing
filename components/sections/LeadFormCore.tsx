@@ -3,8 +3,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { useTranslations, useLocale } from 'next-intl'
-import { sendGTMEvent } from '@next/third-parties/google'
 import { AlertCircle } from 'lucide-react'
+import { trackEvent } from '@/lib/analytics'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -118,7 +118,11 @@ export function LeadFormCore({ source = 'section', onSuccess, autoFocus = false 
   const handleFormStart = () => {
     if (startedRef.current) return
     startedRef.current = true
-    sendGTMEvent({ event: 'form_start', form_name: 'contact', form_source: source })
+    trackEvent('lead_form_start', {
+      form_name: 'seller_application',
+      form_source: source,
+      language: locale,
+    })
   }
 
   const onSubmit = async (values: FormData) => {
@@ -127,12 +131,24 @@ export function LeadFormCore({ source = 'section', onSuccess, autoFocus = false 
       const res = await fetch('/api/leads', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...values, website_confirm: honeypot, ...attribution }),
+        body: JSON.stringify({
+          ...values,
+          website_confirm: honeypot,
+          formSource: source,
+          locale,
+          ...attribution,
+        }),
       })
       if (!res.ok) throw new Error()
+      const data: { leadId?: string } = await res.json()
+      if (!data.leadId) throw new Error()
       setStatus('success')
-      const eventId = crypto.randomUUID()
-      sendGTMEvent({ event: 'form_submit', form_name: 'contact', form_source: source, event_id: eventId })
+      trackEvent('panther_lead_success', {
+        form_name: 'seller_application',
+        form_source: source,
+        lead_id: data.leadId,
+        language: locale,
+      })
       onSuccess?.()
     } catch {
       setStatus('error')

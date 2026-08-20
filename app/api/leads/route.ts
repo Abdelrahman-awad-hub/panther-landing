@@ -10,8 +10,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true })
     }
 
+    const leadId = crypto.randomUUID()
     const result = LeadSubmissionSchema.safeParse({
       ...body,
+      leadId,
       userAgent:   request.headers.get('user-agent') ?? '',
       submittedAt: new Date().toISOString(),
     })
@@ -24,7 +26,7 @@ export async function POST(request: NextRequest) {
     }
 
     await appendLeadToSheet(result.data)
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true, leadId })
   } catch (error) {
     console.error('[leads] submission error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
