@@ -131,7 +131,8 @@ export function LeadFormCore({ source = 'section', onSuccess, autoFocus = false 
       })
       if (!res.ok) throw new Error()
       setStatus('success')
-      sendGTMEvent({ event: 'form_submit', form_name: 'contact', form_source: source })
+      const eventId = crypto.randomUUID()
+      sendGTMEvent({ event: 'form_submit', form_name: 'contact', form_source: source, event_id: eventId })
       onSuccess?.()
     } catch {
       setStatus('error')
