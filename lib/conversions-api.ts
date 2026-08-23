@@ -44,6 +44,7 @@ async function sendMetaLead(data: LeadSubmission): Promise<ProviderResult> {
     external_id: [sha256(data.leadId)],
   }
   if (data.userAgent) userData.client_user_agent = data.userAgent
+  if (data.clientIp) userData.client_ip_address = data.clientIp
   if (data.fbp) userData.fbp = data.fbp
   const fbc = metaFbc(data)
   if (fbc) userData.fbc = fbc
@@ -85,6 +86,7 @@ async function sendTikTokLead(data: LeadSubmission): Promise<ProviderResult> {
     external_id: [sha256(data.leadId)],
   }
   if (data.userAgent) user.user_agent = data.userAgent
+  if (data.clientIp) user.ip = data.clientIp
   if (data.ttclid) user.ttclid = data.ttclid
   if (data.ttp) user.ttp = data.ttp
 
@@ -92,7 +94,7 @@ async function sendTikTokLead(data: LeadSubmission): Promise<ProviderResult> {
     event_source: 'web',
     event_source_id: pixelCode,
     data: [{
-      event: 'SubmitForm',
+      event: 'Lead',
       event_time: eventTimestamp(data),
       event_id: data.leadId,
       user,
@@ -121,7 +123,17 @@ async function sendTikTokLead(data: LeadSubmission): Promise<ProviderResult> {
       signal: AbortSignal.timeout(5000),
     }
   )
-  if (!response.ok) throw new Error(`TikTok Events API returned ${response.status}`)
+  const responseBody = await response.json().catch(() => null) as {
+    code?: number
+    message?: string
+    request_id?: string
+  } | null
+  if (!response.ok || responseBody?.code !== 0) {
+    const details = responseBody
+      ? `code=${responseBody.code ?? 'unknown'} message=${responseBody.message ?? 'unknown'} request_id=${responseBody.request_id ?? 'unknown'}`
+      : 'invalid JSON response'
+    throw new Error(`TikTok Events API returned HTTP ${response.status}: ${details}`)
+  }
   return 'sent'
 }
 

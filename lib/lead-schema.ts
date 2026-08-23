@@ -27,6 +27,7 @@ export const LeadSubmissionSchema = z.object({
   formSource:  z.string().max(50).optional().default('section'),
   locale:      z.enum(['ar', 'en']).optional().default('en'),
   userAgent:   z.string().optional().default(''),
+  clientIp:    z.string().max(100).optional().default(''),
   submittedAt: z.string().optional(),
   website_confirm: z.string().max(0).optional(),
 })

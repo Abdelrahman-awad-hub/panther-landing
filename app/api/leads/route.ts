@@ -5,6 +5,11 @@ import { sendLeadConversions } from '@/lib/conversions-api'
 
 export const runtime = 'nodejs'
 
+function getClientIp(request: NextRequest) {
+  const forwardedFor = request.headers.get('x-forwarded-for')
+  return (forwardedFor?.split(',')[0] || request.headers.get('x-real-ip') || '').trim()
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
@@ -18,6 +23,7 @@ export async function POST(request: NextRequest) {
       ...body,
       leadId,
       userAgent:   request.headers.get('user-agent') ?? '',
+      clientIp:    getClientIp(request),
       submittedAt: new Date().toISOString(),
     })
 

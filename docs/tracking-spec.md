@@ -54,7 +54,7 @@ listed below may be sent.
 4. Attach all three lead tags to that trigger only:
    - GA4 event name: `generate_lead`
    - Meta standard event: `Lead`
-   - TikTok standard event: `SubmitForm`
+   - TikTok standard event: `Lead` (the current name replacing `SubmitForm`)
 5. Set Meta's Event ID to `{{DLV - event_id}}`. Use the same ID if a server-side
    Conversions API integration is enabled later.
 6. Remove the experimental `Block - Invalid Form Submit` exception from the
