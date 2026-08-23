@@ -42,8 +42,13 @@ export async function appendLeadToSheet(data: LeadSubmission): Promise<void> {
   ]
   await sheets.spreadsheets.values.append({
     spreadsheetId: env.google.sheetId,
-    range: 'Sheet1!A:V',
+    // Keep table detection anchored to the legacy A:O table. The appended
+    // row may extend through V, but using A:V as the lookup range can make
+    // Sheets detect the newly-added consent column as a separate table and
+    // start future submissions at column V instead of column A.
+    range: 'Sheet1!A:O',
     valueInputOption: 'RAW',
-    requestBody: { values: [row] },
+    insertDataOption: 'INSERT_ROWS',
+    requestBody: { majorDimension: 'ROWS', values: [row] },
   })
 }
