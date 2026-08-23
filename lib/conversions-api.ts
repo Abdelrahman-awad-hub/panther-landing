@@ -25,6 +25,11 @@ function eventTimestamp(data: LeadSubmission) {
   return Number.isFinite(timestamp) ? Math.floor(timestamp / 1000) : Math.floor(Date.now() / 1000)
 }
 
+function testEventCode(configuredCode: string | undefined) {
+  const deploymentEnvironment = process.env.VERCEL_ENV ?? process.env.NODE_ENV
+  return deploymentEnvironment === 'production' ? undefined : configuredCode
+}
+
 function metaFbc(data: LeadSubmission) {
   if (!data.fbclid) return undefined
   return `fb.1.${eventTimestamp(data) * 1000}.${data.fbclid}`
@@ -64,7 +69,8 @@ async function sendMetaLead(data: LeadSubmission): Promise<ProviderResult> {
       },
     }],
   }
-  if (process.env.META_TEST_EVENT_CODE) body.test_event_code = process.env.META_TEST_EVENT_CODE
+  const metaTestEventCode = testEventCode(process.env.META_TEST_EVENT_CODE)
+  if (metaTestEventCode) body.test_event_code = metaTestEventCode
 
   const response = await fetch(url, {
     method: 'POST',
@@ -109,7 +115,8 @@ async function sendTikTokLead(data: LeadSubmission): Promise<ProviderResult> {
       },
     }],
   }
-  if (process.env.TIKTOK_TEST_EVENT_CODE) body.test_event_code = process.env.TIKTOK_TEST_EVENT_CODE
+  const tiktokTestEventCode = testEventCode(process.env.TIKTOK_TEST_EVENT_CODE)
+  if (tiktokTestEventCode) body.test_event_code = tiktokTestEventCode
 
   const response = await fetch(
     process.env.TIKTOK_EVENTS_API_URL || 'https://business-api.tiktok.com/open_api/v1.3/event/track/',

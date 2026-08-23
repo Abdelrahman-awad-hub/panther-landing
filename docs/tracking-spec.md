@@ -39,8 +39,9 @@ listed below may be sent.
   never included in advertising payloads.
 - Provider failures do not lose or duplicate the lead. They are logged without
   tokens or submitted customer fields.
-- `META_TEST_EVENT_CODE` and `TIKTOK_TEST_EVENT_CODE` may be used only during
-  platform Test Events validation and must be removed before production.
+- `META_TEST_EVENT_CODE` and `TIKTOK_TEST_EVENT_CODE` are used only in Preview
+  or Development. Production ignores them so live conversions cannot be
+  routed into platform Test Events accidentally.
 
 ## GTM migration
 
