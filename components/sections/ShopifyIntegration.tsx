@@ -7,10 +7,11 @@ import { Button } from '@/components/ui/button'
 import { ShoppingBag, RefreshCw, Zap, MapPin, ArrowRight, X, MessageCircle } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { trackEvent } from '@/lib/analytics'
+import { OFFICIAL_WHATSAPP_URL } from '@/lib/contact'
 
 const featureIcons: LucideIcon[] = [RefreshCw, Zap, MapPin]
 const featureKeys = ['1', '2', '3'] as const
-const CONTACT_URL = 'https://wa.me/201070782785'
+const CONTACT_URL = OFFICIAL_WHATSAPP_URL
 
 function ShopifyLogo({ className = '' }: { className?: string }) {
   return (

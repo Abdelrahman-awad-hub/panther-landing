@@ -4,12 +4,17 @@ import { useLocale } from 'next-intl'
 import { Check } from 'lucide-react'
 import { LeadFormCore, PITCH_POINTS } from './LeadFormCore'
 
-export function LeadFormSection() {
+type LeadFormSectionProps = {
+  id?: string
+  source?: string
+}
+
+export function LeadFormSection({ id = 'join', source = 'section' }: LeadFormSectionProps) {
   const locale = useLocale()
   const isAr = locale === 'ar'
 
   return (
-    <section id="join" className="relative bg-white py-24 lg:py-32 overflow-hidden">
+    <section id={id} className="relative scroll-mt-20 bg-white py-20 lg:py-28 overflow-hidden">
       <div
         className="absolute inset-0 pointer-events-none select-none"
         style={{ background: 'radial-gradient(ellipse 55% 65% at 72% 50%, rgba(229,0,26,0.03) 0%, transparent 65%)' }}
@@ -32,19 +37,16 @@ export function LeadFormSection() {
               }}
               aria-hidden="true"
             >
-              {isAr ? '٢٤س' : '24H'}
+              {isAr ? 'نمو' : 'GROW'}
             </span>
 
             <p className="relative flex items-center gap-2 text-panther-red text-xs font-bold tracking-[0.18em] uppercase mb-5">
               <span className="w-1.5 h-1.5 rounded-full bg-panther-red-light flex-shrink-0" aria-hidden="true" />
-              {isAr ? 'انضم الآن' : 'Join Now'}
+              {isAr ? 'سجّل الآن' : 'Sign Up Now'}
             </p>
 
             <h2 className="relative text-3xl lg:text-4xl font-black text-panther-black leading-tight tracking-tight mb-4">
-              {isAr
-                ? <>سيب بياناتك وابدأ<br />شراكتك مع Panther<br />خلال 24 ساعة</>
-                : <>Leave your info and start<br />your partnership with Panther<br />in 24 hours.</>
-              }
+              {isAr ? <>سجّل الآن وابدأ<br />مع بانثر</> : <>Sign Up Now and<br />Start with Panther</>}
             </h2>
 
             <p className="relative text-gray-500 text-base leading-relaxed mb-10">
@@ -75,7 +77,7 @@ export function LeadFormSection() {
                 boxShadow: '0 4px 6px -1px rgba(0,0,0,0.07), 0 16px 40px -4px rgba(0,0,0,0.08)',
               }}
             >
-              <LeadFormCore source="section" />
+              <LeadFormCore source={source} />
             </div>
           </div>
 

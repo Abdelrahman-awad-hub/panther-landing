@@ -15,6 +15,7 @@ never use GTM's native form-submit event.
 | `lead_form_validation_error` | A submit attempt fails browser validation | `form_name`, `form_source`, `error_fields`, `language` |
 | `lead_form_error` | The lead API does not confirm storage | `form_name`, `form_source`, `error_type`, `language` |
 | `panther_lead_success` | The API has validated and stored the lead | `lead_id`, `event_id`, `form_name`, `form_source`, `lead_source`, `volume_category`, `language` |
+| `panther_qualified_lead` | A stored lead also matches Panther's pickup or warehousing rules | All lead-success parameters plus `lead_qualification`, `warehouse_interest` |
 | `consent_update` | The visitor saves an optional tracking choice | `marketing_consent`, `language` |
 | `shipment_track_search` | A valid tracking search starts | `language` |
 | `shipment_track_result` | A tracking search finishes | `tracking_outcome`, `track_status` when found, `language` |
@@ -75,6 +76,8 @@ Create these variables exactly as written:
 - `DLV - form_source` → `form_source`
 - `DLV - lead_source` → `lead_source`
 - `DLV - volume_category` → `volume_category`
+- `DLV - lead_qualification` → `lead_qualification`
+- `DLV - warehouse_interest` → `warehouse_interest`
 - `DLV - language` → `language`
 - `DLV - cta_name` → `cta_name`
 - `DLV - cta_location` → `cta_location`
@@ -101,6 +104,7 @@ Create these variables exactly as written:
 | `lead_form_validation_error` | `form_validation_error` | `form_name`, `form_source`, `error_fields`, `language` |
 | `lead_form_error` | `form_error` | `form_name`, `form_source`, `error_type`, `language` |
 | `panther_lead_success` | `generate_lead` | `lead_id`, `event_id`, `lead_source`, `form_name`, `form_source`, `volume_category`, `language` |
+| `panther_qualified_lead` | `qualified_lead` | `lead_id`, `event_id`, `form_source`, `volume_category`, `lead_qualification`, `warehouse_interest`, `language` |
 | `shipment_track_search` | `shipment_track_search` | `language` |
 | `shipment_track_result` | `shipment_track_result` | `tracking_outcome`, `track_status`, `language` |
 | `language_switch` | `language_switch` | `language` |
@@ -110,12 +114,54 @@ are diagnostic funnel steps, not primary conversions.
 
 ## Lead sheet columns
 
-The append order is A:V:
+The append order is A:AK. Columns H:N remain reserved for the sales team's
+owner/call/feedback workflow. Website tracking starts at O:
 
 `submittedAt`, `brandName`, `phone`, `city`, `volumeCategory`, `socialLink`,
-`websiteUrl`, `referrerUrl`, `landingUrl`, `utmSource`, `utmMedium`,
-`utmCampaign`, `utmTerm`, `utmContent`, `userAgent`, `leadId`, `formSource`,
-`locale`, `gclid`, `fbclid`, `ttclid`, `marketingConsent`.
+`websiteUrl`, `[seven sales columns H:N]`, `leadId`, `formSource`, `locale`,
+`leadQualification`, `warehouseInterest`, `referrerUrl`, `landingUrl`,
+`utmSource`, `utmMedium`, `utmCampaign`, `utmTerm`, `utmContent`, `gclid`,
+`fbclid`, `ttclid`, `marketingConsent`, `userAgent`, `fbp`, `ttp`,
+`leadOutcome`, `outcomeReason`, `outcomeUpdatedAt`, `metaOutcomeStatus`.
+
+Qualification values are `qualified_pickup`, `qualified_warehouse`,
+`below_minimum`, `pickup_unavailable`, and `pending`. Advertising platforms
+continue receiving the stored lead event for optimization; the qualified event
+is an additional CRM/GA4 quality signal and must not replace lead storage.
+
+## Sales outcome feedback loop
+
+The `leadOutcome` column has three sales-owned choices:
+
+- `مؤهل` sends `QualifiedLead` to Meta.
+- `غير مناسب` sends the distinct custom event `PantherDisqualifiedLead`. It
+  must never be configured as the campaign optimization event; it is available
+  for quality reporting and exclusion audiences.
+- `تم التعاقد` sends `QualifiedLead` and `CompleteRegistration`. A deterministic
+  event ID (`leadId:eventName`) makes retries idempotent.
+
+The Apps Script in `scripts/google-sheets-lead-outcomes.gs` watches this column
+using an installable edit trigger and calls `POST /api/lead-outcome`. The route
+requires the server-only `CRM_WEBHOOK_SECRET`, validates every field, hashes the
+phone and external ID, and sends no free-text reason to Meta. `outcomeReason`
+stays in the sales sheet only.
+
+Outcome events are consent-aware. If the original row says `denied`, the status
+is saved in the sheet but no advertising event is sent. `metaOutcomeStatus`
+shows whether Meta received the event, skipped it, or needs a retry.
+
+### One-time activation
+
+1. Add a random 32+ character `CRM_WEBHOOK_SECRET` to the deployed project's
+   server environment.
+2. Publish the reviewed code before connecting the sheet; the webhook must be
+   reachable over HTTPS.
+3. Open the leads sheet, choose **Extensions → Apps Script**, paste
+   `scripts/google-sheets-lead-outcomes.gs`, and save.
+4. Run `configurePantherOutcomeSync` once. Enter the production landing-page
+   origin and the exact same secret, then approve the requested permissions.
+5. Change one consented test lead to each outcome and confirm both the
+   `metaOutcomeStatus` cell and Meta Test Events before using live data.
 
 ## Release verification
 

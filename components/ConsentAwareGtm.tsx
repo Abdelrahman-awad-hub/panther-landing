@@ -59,8 +59,15 @@ export function ConsentAwareGtm({ gtmId }: ConsentAwareGtmProps) {
 
     queueMicrotask(() => {
       setConsentState(stored)
-      setShowDialog(stored === 'unknown')
+      if (stored !== 'unknown') setShowDialog(false)
     })
+
+    if (stored !== 'unknown') return
+
+    // Keep the first visit focused on the offer. The choice remains explicit,
+    // but appears after the visitor has had time to understand the page.
+    const dialogTimer = window.setTimeout(() => setShowDialog(true), 3500)
+    return () => window.clearTimeout(dialogTimer)
   }, [gtmId])
 
   const choose = (value: Exclude<MarketingConsent, 'unknown'>) => {
@@ -83,25 +90,27 @@ export function ConsentAwareGtm({ gtmId }: ConsentAwareGtmProps) {
       {showDialog && (
         <section
           role="dialog"
-          aria-modal="true"
+          aria-modal="false"
           aria-labelledby="tracking-consent-title"
           dir={locale === 'ar' ? 'rtl' : 'ltr'}
-          className="fixed inset-x-3 bottom-3 z-[100] mx-auto max-w-2xl rounded-2xl border border-gray-200 bg-white p-5 text-gray-900 shadow-2xl sm:inset-x-6"
+          className="fixed inset-x-3 bottom-3 z-[100] mx-auto max-w-3xl rounded-xl border border-gray-200 bg-white/95 p-3 text-gray-900 shadow-xl backdrop-blur sm:inset-x-6 sm:flex sm:items-center sm:gap-4 sm:px-4"
         >
-          <h2 id="tracking-consent-title" className="text-base font-bold">{t('title')}</h2>
-          <p className="mt-2 text-sm leading-6 text-gray-600">{t('description')}</p>
-          <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:justify-end">
+          <div className="min-w-0 flex-1">
+            <h2 id="tracking-consent-title" className="text-sm font-bold">{t('title')}</h2>
+            <p className="mt-1 text-xs leading-5 text-gray-600">{t('description')}</p>
+          </div>
+          <div className="mt-3 flex shrink-0 gap-2 sm:mt-0 sm:justify-end">
             <button
               type="button"
               onClick={() => choose('denied')}
-              className="rounded-lg border border-gray-300 px-4 py-2.5 text-sm font-semibold hover:bg-gray-50"
+              className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-xs font-semibold hover:bg-gray-50 sm:flex-none"
             >
               {t('reject')}
             </button>
             <button
               type="button"
               onClick={() => choose('granted')}
-              className="rounded-lg bg-panther-red px-4 py-2.5 text-sm font-bold text-white hover:bg-panther-red-dark"
+              className="flex-1 rounded-lg bg-panther-red px-3 py-2 text-xs font-bold text-white hover:bg-panther-red-dark sm:flex-none"
             >
               {t('accept')}
             </button>
@@ -113,7 +122,7 @@ export function ConsentAwareGtm({ gtmId }: ConsentAwareGtmProps) {
         <button
           type="button"
           onClick={() => setShowDialog(true)}
-          className="fixed bottom-3 left-3 z-[90] rounded-full border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 shadow-lg hover:bg-gray-50"
+          className="fixed bottom-3 left-1/2 z-[90] -translate-x-1/2 rounded-full border border-gray-200 bg-white px-2.5 py-1.5 text-[11px] font-semibold text-gray-700 shadow-md hover:bg-gray-50"
         >
           {t('settings')}
         </button>

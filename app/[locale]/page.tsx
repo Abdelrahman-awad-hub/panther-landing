@@ -1,8 +1,10 @@
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
 import { HeroSection } from '@/components/sections/Hero'
+import { TrustedBrandsStrip } from '@/components/sections/TrustedBrandsStrip'
 import { AboutSection } from '@/components/sections/About'
 import { ServicesSection } from '@/components/sections/Services'
+import { WarehousingSection } from '@/components/sections/Warehousing'
 import { ShopifyIntegrationSection } from '@/components/sections/ShopifyIntegration'
 import { ClientsSection } from '@/components/sections/Clients'
 import { SellerHighlightsSection } from '@/components/sections/SellerHighlights'
@@ -19,12 +21,15 @@ export default function HomePage() {
       <Header sellerPortalUrl={sellerPortalUrl} />
       <main>
         <HeroSection />
+        <TrustedBrandsStrip />
         <AboutSection />
         <ServicesSection />
+        <WarehousingSection />
+        <LeadFormSection id="join" source="mid_page" />
         <ShopifyIntegrationSection />
         <ClientsSection />
         <SellerHighlightsSection sellerPortalUrl={sellerPortalUrl} />
-        <LeadFormSection />
+        <LeadFormSection id="join-bottom" source="bottom_page" />
       </main>
       <SellerCTA />
       <SocialDock />

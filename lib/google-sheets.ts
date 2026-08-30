@@ -24,6 +24,13 @@ export async function appendLeadToSheet(data: LeadSubmission): Promise<void> {
     data.volumeCategory,
     data.socialLink  ?? '',
     data.websiteUrl  ?? '',
+    // H:N are reserved for the sales team's call owner and feedback fields.
+    '', '', '', '', '', '', '',
+    data.leadId,
+    data.formSource,
+    data.locale,
+    data.leadQualification,
+    data.warehouseInterest,
     data.referrerUrl ?? '',
     data.landingUrl  ?? '',
     data.utmSource   ?? '',
@@ -31,24 +38,76 @@ export async function appendLeadToSheet(data: LeadSubmission): Promise<void> {
     data.utmCampaign ?? '',
     data.utmTerm     ?? '',
     data.utmContent  ?? '',
-    data.userAgent   ?? '',
-    data.leadId,
-    data.formSource,
-    data.locale,
     data.gclid,
     data.fbclid,
     data.ttclid,
     data.marketingConsent ? 'granted' : 'denied',
+    data.userAgent   ?? '',
+    data.fbp,
+    data.ttp,
+    '', '', '', '',
   ]
   await sheets.spreadsheets.values.append({
     spreadsheetId: env.google.sheetId,
-    // Keep table detection anchored to the legacy A:O table. The appended
-    // row may extend through V, but using A:V as the lookup range can make
-    // Sheets detect the newly-added consent column as a separate table and
-    // start future submissions at column V instead of column A.
+    // Keep table detection anchored to the legacy A:O table. The row may
+    // extend through AK, but a wider lookup range can make Sheets detect the
+    // tracking area as a separate table and offset later submissions.
     range: 'Sheet1!A:O',
     valueInputOption: 'RAW',
     insertDataOption: 'INSERT_ROWS',
     requestBody: { majorDimension: 'ROWS', values: [row] },
   })
+
+  // Sheet UX enhancements are best-effort and can never block lead storage.
+  try {
+    const trackingHeaders = [[
+      'leadId', 'formSource', 'locale', 'leadQualification', 'warehouseInterest',
+      'referrerUrl', 'landingUrl', 'utmSource', 'utmMedium', 'utmCampaign',
+      'utmTerm', 'utmContent', 'gclid', 'fbclid', 'ttclid', 'marketingConsent', 'userAgent',
+      'fbp', 'ttp', 'leadOutcome', 'outcomeReason', 'outcomeUpdatedAt', 'metaOutcomeStatus',
+    ]]
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: env.google.sheetId,
+      range: 'Sheet1!O1:AK1',
+      valueInputOption: 'RAW',
+      requestBody: { majorDimension: 'ROWS', values: trackingHeaders },
+    })
+    const spreadsheet = await sheets.spreadsheets.get({
+      spreadsheetId: env.google.sheetId,
+      fields: 'sheets.properties(sheetId,title)',
+    })
+    const leadSheet = spreadsheet.data.sheets?.find((sheet) => sheet.properties?.title === 'Sheet1')
+    if (leadSheet?.properties?.sheetId !== undefined) {
+      await sheets.spreadsheets.batchUpdate({
+        spreadsheetId: env.google.sheetId,
+        requestBody: {
+          requests: [{
+            setDataValidation: {
+              range: {
+                sheetId: leadSheet.properties.sheetId,
+                startRowIndex: 1,
+                endRowIndex: 5000,
+                startColumnIndex: 33,
+                endColumnIndex: 34,
+              },
+              rule: {
+                condition: {
+                  type: 'ONE_OF_LIST',
+                  values: [
+                    { userEnteredValue: 'مؤهل' },
+                    { userEnteredValue: 'غير مناسب' },
+                    { userEnteredValue: 'تم التعاقد' },
+                  ],
+                },
+                strict: true,
+                showCustomUi: true,
+              },
+            },
+          }],
+        },
+      })
+    }
+  } catch (error) {
+    console.error('[sheets] outcome columns setup failed:', error instanceof Error ? error.message : 'unknown')
+  }
 }

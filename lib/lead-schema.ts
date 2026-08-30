@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { VOLUME_CATEGORIES } from './lead-qualification'
 
 export const LeadSubmissionSchema = z.object({
   leadId: z.string().uuid(),
@@ -8,7 +9,11 @@ export const LeadSubmissionSchema = z.object({
     .min(1)
     .regex(/^(\+20|0020|0)?1[0125][0-9]{8,10}$/, 'Invalid Egyptian phone number'),
   city: z.string().min(1),
-  volumeCategory: z.enum(['300', '1000', '5000', '5000plus']),
+  volumeCategory: z.enum(VOLUME_CATEGORIES),
+  warehouseInterest: z.enum(['yes', 'no', 'not_applicable']).optional().default('not_applicable'),
+  leadQualification: z.enum([
+    'below_minimum', 'qualified_pickup', 'qualified_warehouse', 'pickup_unavailable', 'pending',
+  ]).optional().default('pending'),
   socialLink:  z.union([z.string().url(), z.literal('')]).optional(),
   websiteUrl:  z.union([z.string().url(), z.literal('')]).optional(),
   referrerUrl: z.string().optional().default(''),

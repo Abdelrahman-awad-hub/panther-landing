@@ -5,8 +5,8 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { MessageCircle, Mail, Phone, ArrowRight } from 'lucide-react'
 import { trackEvent } from '@/lib/analytics'
+import { OFFICIAL_WHATSAPP_URL } from '@/lib/contact'
 
-const WHATSAPP_URL = 'https://wa.me/201070782785'
 const PHONE_DISPLAY = '+20 107 078 2785'
 const EMAIL = 'sales@panther-express.com'
 
@@ -54,7 +54,7 @@ export function ContactUs() {
       desc: t('whatsappDesc'),
       value: PHONE_DISPLAY,
       cta: t('whatsappCta'),
-      href: WHATSAPP_URL,
+      href: OFFICIAL_WHATSAPP_URL,
       external: true,
     },
     {

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { LeadSubmissionSchema } from '@/lib/lead-schema'
 import { appendLeadToSheet } from '@/lib/google-sheets'
 import { sendLeadConversions } from '@/lib/conversions-api'
+import { classifyLead, needsWarehouseQuestion } from '@/lib/lead-qualification'
 
 export const runtime = 'nodejs'
 
@@ -19,8 +20,14 @@ export async function POST(request: NextRequest) {
     }
 
     const leadId = crypto.randomUUID()
+    const warehouseInterest = needsWarehouseQuestion(body.city, body.volumeCategory)
+      ? body.warehouseInterest
+      : 'not_applicable'
+    const leadQualification = classifyLead({ ...body, warehouseInterest })
     const result = LeadSubmissionSchema.safeParse({
       ...body,
+      warehouseInterest,
+      leadQualification,
       leadId,
       userAgent:   request.headers.get('user-agent') ?? '',
       clientIp:    getClientIp(request),
