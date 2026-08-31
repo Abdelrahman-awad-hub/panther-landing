@@ -16,23 +16,24 @@ never use GTM's native form-submit event.
 | `lead_form_error` | The lead API does not confirm storage | `form_name`, `form_source`, `error_type`, `language` |
 | `panther_lead_success` | The API has validated and stored the lead | `lead_id`, `event_id`, `form_name`, `form_source`, `lead_source`, `volume_category`, `language` |
 | `panther_qualified_lead` | A stored lead also matches Panther's pickup or warehousing rules | All lead-success parameters plus `lead_qualification`, `warehouse_interest` |
-| `consent_update` | The visitor saves an optional tracking choice | `marketing_consent`, `language` |
 | `shipment_track_search` | A valid tracking search starts | `language` |
 | `shipment_track_result` | A tracking search finishes | `tracking_outcome`, `track_status` when found, `language` |
 | `language_switch` | The visitor selects the other language | `language` (destination language) |
 
 Every event also contains `page_path`, `page_location`, and `page_title`.
 Customer phone numbers, brand names, entered URLs, and waybill numbers must
-never be sent to browser analytics or advertising tags. For consented server
-lead matching, only the normalized phone hash and non-sensitive identifiers
-listed below may be sent.
+never be sent to browser analytics or advertising tags. For server lead
+matching, only the normalized phone hash and non-sensitive identifiers listed
+below may be sent.
 
-## Consent and server-side conversion delivery
+## Automatic tracking and server-side conversion delivery
 
-- GTM is not loaded until the visitor accepts optional tracking. Rejecting it
-  never blocks the website or the lead form.
-- A stored lead is sent to Meta CAPI and TikTok Events API only when
-  `marketingConsent` is `true`.
+- GTM loads automatically on every page through one Next.js `Script`
+  bootstrap in the locale layout. There is no consent popup or code-level
+  `denied` default blocking the container.
+- GA4, Meta Pixel, and TikTok Pixel remain owned by GTM. The application must
+  not add hardcoded copies of those tags.
+- Every validated and stored lead is sent to Meta CAPI and TikTok Events API.
 - Meta and TikTok receive the same `leadId` as the browser `event_id`, allowing
   the platforms to deduplicate browser and server copies.
 - Phone and external ID are normalized and SHA-256 hashed on the server. API
@@ -91,7 +92,6 @@ Create these variables exactly as written:
 - `DLV - page_path` → `page_path`
 - `DLV - page_location` → `page_location`
 - `DLV - page_title` → `page_title`
-- `DLV - marketing_consent` → `marketing_consent`
 
 ## GA4 event mapping
 
@@ -114,15 +114,20 @@ are diagnostic funnel steps, not primary conversions.
 
 ## Lead sheet columns
 
-The append order is A:AK. Columns H:N remain reserved for the sales team's
-owner/call/feedback workflow. Website tracking starts at O:
+The existing website-leads schema in A:V is preserved exactly:
 
 `submittedAt`, `brandName`, `phone`, `city`, `volumeCategory`, `socialLink`,
-`websiteUrl`, `[seven sales columns H:N]`, `leadId`, `formSource`, `locale`,
-`leadQualification`, `warehouseInterest`, `referrerUrl`, `landingUrl`,
-`utmSource`, `utmMedium`, `utmCampaign`, `utmTerm`, `utmContent`, `gclid`,
-`fbclid`, `ttclid`, `marketingConsent`, `userAgent`, `fbp`, `ttp`,
-`leadOutcome`, `outcomeReason`, `outcomeUpdatedAt`, `metaOutcomeStatus`.
+`websiteUrl`, `referrerUrl`, `landingUrl`, `utmSource`, `utmMedium`,
+`utmCampaign`, `utmTerm`, `utmContent`, `userAgent`, `leadId`, `formSource`,
+`locale`, `gclid`, `fbclid`, `ttclid`, `marketingConsent`.
+
+New quality and outcome fields are appended only in W:AD:
+
+`leadQualification`, `warehouseInterest`, `fbp`, `ttp`, `leadOutcome`,
+`outcomeReason`, `outcomeUpdatedAt`, `metaOutcomeStatus`.
+
+`marketingConsent` is retained as an always-granted legacy column so existing
+sheet positions do not shift. It no longer gates browser or server tracking.
 
 Qualification values are `qualified_pickup`, `qualified_warehouse`,
 `below_minimum`, `pickup_unavailable`, and `pending`. Advertising platforms
@@ -146,9 +151,8 @@ requires the server-only `CRM_WEBHOOK_SECRET`, validates every field, hashes the
 phone and external ID, and sends no free-text reason to Meta. `outcomeReason`
 stays in the sales sheet only.
 
-Outcome events are consent-aware. If the original row says `denied`, the status
-is saved in the sheet but no advertising event is sent. `metaOutcomeStatus`
-shows whether Meta received the event, skipped it, or needs a retry.
+`metaOutcomeStatus` shows whether Meta received the outcome event, skipped it
+because Meta is not configured, or needs a retry.
 
 ### One-time activation
 
@@ -156,11 +160,16 @@ shows whether Meta received the event, skipped it, or needs a retry.
    server environment.
 2. Publish the reviewed code before connecting the sheet; the webhook must be
    reachable over HTTPS.
-3. Open the leads sheet, choose **Extensions → Apps Script**, paste
+3. Create a standalone Apps Script project, paste
    `scripts/google-sheets-lead-outcomes.gs`, and save.
-4. Run `configurePantherOutcomeSync` once. Enter the production landing-page
-   origin and the exact same secret, then approve the requested permissions.
-5. Change one consented test lead to each outcome and confirm both the
+4. Add these Script Properties: `PANTHER_SPREADSHEET_ID` with the website-leads
+   spreadsheet ID, `PANTHER_OUTCOME_WEBHOOK_URL` with the full production
+   `/api/lead-outcome` URL, and `CRM_WEBHOOK_SECRET` with the exact same value
+   used by the deployed application.
+5. Run `configurePantherOutcomeSync` once and approve the requested
+   spreadsheet permissions. Confirm that exactly one **From spreadsheet - On
+   edit** trigger exists for `handlePantherLeadOutcomeEdit`.
+6. Change one test lead to each outcome and confirm both the
    `metaOutcomeStatus` cell and Meta Test Events before using live data.
 
 ## Release verification
@@ -176,6 +185,5 @@ shows whether Meta received the event, skipped it, or needs a retry.
   from the previous event.
 - Tag Assistant Console has no errors and all tags use the published container
   version intended for release.
-- Accept consent with an ad blocker enabled, submit one approved test lead and
-  verify that Meta/TikTok Test Events show the server event with the same
-  `event_id`. Reject consent and verify that neither server event is sent.
+- With an ad blocker enabled, submit one approved test lead and verify that
+  Meta/TikTok Test Events still show the server event with the same `event_id`.

@@ -13,7 +13,8 @@ export const LeadOutcomeUpdateSchema = z.object({
   landingUrl: z.string().url().or(z.literal('')).optional().default(''),
   fbclid: z.string().max(500).optional().default(''),
   fbp: z.string().max(500).optional().default(''),
-  marketingConsent: z.boolean().optional().default(false),
+  // Retained for backward compatibility with existing sheet payloads.
+  marketingConsent: z.boolean().optional().default(true),
   submittedAt: z.iso.datetime().optional(),
   occurredAt: z.iso.datetime().optional(),
 })

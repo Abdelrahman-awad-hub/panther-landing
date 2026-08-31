@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
       success: true,
       delivery,
       events: delivery === 'sent' ? META_OUTCOME_EVENTS[parsed.data.outcome] : [],
-      reason: delivery === 'skipped' ? 'marketing_consent_not_granted_or_meta_not_configured' : undefined,
+      reason: delivery === 'skipped' ? 'meta_not_configured' : undefined,
     })
   } catch (error) {
     console.error('[lead-outcome] Meta delivery failed:', error)

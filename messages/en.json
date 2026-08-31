@@ -177,13 +177,6 @@
     "tiktok": "TikTok",
     "email": "Email"
   },
-  "consent": {
-    "title": "Your privacy choices",
-    "description": "Allow Panther to measure campaign performance with analytics and Meta/TikTok tools. You can reject optional tracking and still submit the form normally.",
-    "accept": "Accept optional tracking",
-    "reject": "Reject optional tracking",
-    "settings": "Privacy settings"
-  },
   "contactPage": {
     "badge": "Contact Us",
     "title": "Let's Talk Logistics",

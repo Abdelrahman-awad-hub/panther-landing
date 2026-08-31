@@ -28,7 +28,8 @@ export const LeadSubmissionSchema = z.object({
   ttclid:      z.string().max(500).optional().default(''),
   fbp:         z.string().max(500).optional().default(''),
   ttp:         z.string().max(500).optional().default(''),
-  marketingConsent: z.boolean().optional().default(false),
+  // Retained for sheet compatibility; this landing now tracks automatically.
+  marketingConsent: z.boolean().optional().default(true),
   formSource:  z.string().max(50).optional().default('section'),
   locale:      z.enum(['ar', 'en']).optional().default('en'),
   userAgent:   z.string().optional().default(''),

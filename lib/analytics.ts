@@ -22,7 +22,6 @@ const EVENT_FIELDS = [
   'volume_category',
   'lead_qualification',
   'warehouse_interest',
-  'marketing_consent',
 ] as const
 
 /**

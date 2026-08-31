@@ -24,13 +24,6 @@ export async function appendLeadToSheet(data: LeadSubmission): Promise<void> {
     data.volumeCategory,
     data.socialLink  ?? '',
     data.websiteUrl  ?? '',
-    // H:N are reserved for the sales team's call owner and feedback fields.
-    '', '', '', '', '', '', '',
-    data.leadId,
-    data.formSource,
-    data.locale,
-    data.leadQualification,
-    data.warehouseInterest,
     data.referrerUrl ?? '',
     data.landingUrl  ?? '',
     data.utmSource   ?? '',
@@ -38,21 +31,26 @@ export async function appendLeadToSheet(data: LeadSubmission): Promise<void> {
     data.utmCampaign ?? '',
     data.utmTerm     ?? '',
     data.utmContent  ?? '',
+    data.userAgent   ?? '',
+    data.leadId,
+    data.formSource,
+    data.locale,
     data.gclid,
     data.fbclid,
     data.ttclid,
     data.marketingConsent ? 'granted' : 'denied',
-    data.userAgent   ?? '',
+    data.leadQualification,
+    data.warehouseInterest,
     data.fbp,
     data.ttp,
     '', '', '', '',
   ]
   await sheets.spreadsheets.values.append({
     spreadsheetId: env.google.sheetId,
-    // Keep table detection anchored to the legacy A:O table. The row may
-    // extend through AK, but a wider lookup range can make Sheets detect the
-    // tracking area as a separate table and offset later submissions.
-    range: 'Sheet1!A:O',
+    // Keep table detection anchored to the existing A:V website-leads table.
+    // The row may extend through AD, but a wider lookup range can make Sheets
+    // detect the tracking area as a separate table and offset later submissions.
+    range: 'Sheet1!A:V',
     valueInputOption: 'RAW',
     insertDataOption: 'INSERT_ROWS',
     requestBody: { majorDimension: 'ROWS', values: [row] },
@@ -61,23 +59,22 @@ export async function appendLeadToSheet(data: LeadSubmission): Promise<void> {
   // Sheet UX enhancements are best-effort and can never block lead storage.
   try {
     const trackingHeaders = [[
-      'leadId', 'formSource', 'locale', 'leadQualification', 'warehouseInterest',
-      'referrerUrl', 'landingUrl', 'utmSource', 'utmMedium', 'utmCampaign',
-      'utmTerm', 'utmContent', 'gclid', 'fbclid', 'ttclid', 'marketingConsent', 'userAgent',
-      'fbp', 'ttp', 'leadOutcome', 'outcomeReason', 'outcomeUpdatedAt', 'metaOutcomeStatus',
+      'leadQualification', 'warehouseInterest', 'fbp', 'ttp',
+      'leadOutcome', 'outcomeReason', 'outcomeUpdatedAt', 'metaOutcomeStatus',
     ]]
     await sheets.spreadsheets.values.update({
       spreadsheetId: env.google.sheetId,
-      range: 'Sheet1!O1:AK1',
+      range: 'Sheet1!W1:AD1',
       valueInputOption: 'RAW',
       requestBody: { majorDimension: 'ROWS', values: trackingHeaders },
     })
     const spreadsheet = await sheets.spreadsheets.get({
       spreadsheetId: env.google.sheetId,
-      fields: 'sheets.properties(sheetId,title)',
+      fields: 'sheets.properties(sheetId,title,gridProperties.rowCount)',
     })
     const leadSheet = spreadsheet.data.sheets?.find((sheet) => sheet.properties?.title === 'Sheet1')
     if (leadSheet?.properties?.sheetId !== undefined) {
+      const rowCount = Math.max(leadSheet.properties.gridProperties?.rowCount ?? 1000, 2)
       await sheets.spreadsheets.batchUpdate({
         spreadsheetId: env.google.sheetId,
         requestBody: {
@@ -86,9 +83,9 @@ export async function appendLeadToSheet(data: LeadSubmission): Promise<void> {
               range: {
                 sheetId: leadSheet.properties.sheetId,
                 startRowIndex: 1,
-                endRowIndex: 5000,
-                startColumnIndex: 33,
-                endColumnIndex: 34,
+                endRowIndex: rowCount,
+                startColumnIndex: 26,
+                endColumnIndex: 27,
               },
               rule: {
                 condition: {

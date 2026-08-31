@@ -1,8 +1,9 @@
 /**
  * Panther sales outcome -> Meta feedback loop.
  *
- * Paste this file into Extensions > Apps Script for the leads spreadsheet,
- * save it, then run configurePantherOutcomeSync() once as the sheet owner.
+ * Works as a standalone Apps Script project so the current website-leads
+ * sheet can remain untouched. Set the three required Script Properties,
+ * save this file, then run configurePantherOutcomeSync() once.
  */
 
 const PANTHER_OUTCOME_MAP = Object.freeze({
@@ -11,12 +12,9 @@ const PANTHER_OUTCOME_MAP = Object.freeze({
   'تم التعاقد': 'contracted',
 });
 
-const PANTHER_TRACKING_HEADERS = Object.freeze([
-  'leadId', 'formSource', 'locale', 'leadQualification', 'warehouseInterest',
-  'referrerUrl', 'landingUrl', 'utmSource', 'utmMedium', 'utmCampaign',
-  'utmTerm', 'utmContent', 'gclid', 'fbclid', 'ttclid', 'marketingConsent',
-  'userAgent', 'fbp', 'ttp', 'leadOutcome', 'outcomeReason',
-  'outcomeUpdatedAt', 'metaOutcomeStatus',
+const PANTHER_OUTCOME_HEADERS = Object.freeze([
+  'leadQualification', 'warehouseInterest', 'fbp', 'ttp', 'leadOutcome',
+  'outcomeReason', 'outcomeUpdatedAt', 'metaOutcomeStatus',
 ]);
 
 function onOpen() {
@@ -27,36 +25,17 @@ function onOpen() {
 }
 
 function configurePantherOutcomeSync() {
-  const ui = SpreadsheetApp.getUi();
-  const urlPrompt = ui.prompt(
-    'Panther Tracking',
-    'اكتب رابط الموقع المنشور، مثال: https://landing.panther-express.com',
-    ui.ButtonSet.OK_CANCEL
-  );
-  if (urlPrompt.getSelectedButton() !== ui.Button.OK) return;
-
-  const secretPrompt = ui.prompt(
-    'Panther Tracking',
-    'اكتب نفس CRM_WEBHOOK_SECRET الموجود في إعدادات المشروع.',
-    ui.ButtonSet.OK_CANCEL
-  );
-  if (secretPrompt.getSelectedButton() !== ui.Button.OK) return;
-
-  const baseUrl = urlPrompt.getResponseText().trim().replace(/\/$/, '');
-  const secret = secretPrompt.getResponseText().trim();
-  if (!/^https:\/\//.test(baseUrl) || secret.length < 24) {
-    ui.alert('الرابط لازم يبدأ بـ https والرمز السري لازم يكون 24 حرف على الأقل.');
-    return;
+  const properties = PropertiesService.getScriptProperties();
+  const spreadsheetId = properties.getProperty('PANTHER_SPREADSHEET_ID');
+  const webhookUrl = properties.getProperty('PANTHER_OUTCOME_WEBHOOK_URL');
+  const secret = properties.getProperty('CRM_WEBHOOK_SECRET');
+  if (!spreadsheetId || !/^https:\/\//.test(webhookUrl || '') || !secret || secret.length < 24) {
+    throw new Error('Set PANTHER_SPREADSHEET_ID, PANTHER_OUTCOME_WEBHOOK_URL, and CRM_WEBHOOK_SECRET first.');
   }
 
-  PropertiesService.getScriptProperties().setProperties({
-    PANTHER_OUTCOME_WEBHOOK_URL: baseUrl + '/api/lead-outcome',
-    PANTHER_OUTCOME_WEBHOOK_SECRET: secret,
-  });
+  const spreadsheet = SpreadsheetApp.openById(spreadsheetId);
+  ensurePantherOutcomeColumns_(spreadsheet);
 
-  ensurePantherOutcomeColumns_();
-
-  const spreadsheet = SpreadsheetApp.getActive();
   const triggerExists = ScriptApp.getProjectTriggers().some(function (trigger) {
     return trigger.getHandlerFunction() === 'handlePantherLeadOutcomeEdit';
   });
@@ -67,21 +46,30 @@ function configurePantherOutcomeSync() {
       .create();
   }
 
-  ui.alert('تم تفعيل مزامنة جودة العملاء مع ميتا.');
+  console.log('Panther lead-outcome sync is active.');
 }
 
-function ensurePantherOutcomeColumns_() {
-  const sheet = SpreadsheetApp.getActive().getSheetByName('Sheet1');
+function ensurePantherOutcomeColumns_(spreadsheet) {
+  const sheet = spreadsheet.getSheetByName('Sheet1');
   if (!sheet) throw new Error('Sheet1 was not found');
 
-  // A:N remains untouched because it belongs to the sales workflow.
-  sheet.getRange(1, 15, 1, PANTHER_TRACKING_HEADERS.length)
-    .setValues([PANTHER_TRACKING_HEADERS]);
+  // A:V is the live website-leads schema. Append outcome fields without
+  // renaming or moving any existing column or historical value.
+  sheet.getRange(1, 23, 1, PANTHER_OUTCOME_HEADERS.length)
+    .setValues([PANTHER_OUTCOME_HEADERS]);
   const validation = SpreadsheetApp.newDataValidation()
     .requireValueInList(Object.keys(PANTHER_OUTCOME_MAP), true)
     .setAllowInvalid(false)
     .build();
-  sheet.getRange(2, 34, 4999, 1).setDataValidation(validation);
+  sheet.getRange(2, 27, Math.max(sheet.getMaxRows() - 1, 1), 1)
+    .setDataValidation(validation);
+}
+
+function pantherHeaderIndex_(headers, name) {
+  const normalized = String(name).toLowerCase().replace(/[^a-z0-9]/g, '');
+  return headers.findIndex(function (header) {
+    return String(header).toLowerCase().replace(/[^a-z0-9]/g, '') === normalized;
+  });
 }
 
 function handlePantherLeadOutcomeEdit(event) {
@@ -92,11 +80,11 @@ function handlePantherLeadOutcomeEdit(event) {
 
   const lastColumn = sheet.getLastColumn();
   const headers = sheet.getRange(1, 1, 1, lastColumn).getDisplayValues()[0];
-  const outcomeColumn = headers.indexOf('leadOutcome') + 1;
+  const outcomeColumn = pantherHeaderIndex_(headers, 'leadOutcome') + 1;
   if (!outcomeColumn || event.range.getColumn() !== outcomeColumn) return;
 
-  const statusColumn = headers.indexOf('metaOutcomeStatus') + 1;
-  const updatedAtColumn = headers.indexOf('outcomeUpdatedAt') + 1;
+  const statusColumn = pantherHeaderIndex_(headers, 'metaOutcomeStatus') + 1;
+  const updatedAtColumn = pantherHeaderIndex_(headers, 'outcomeUpdatedAt') + 1;
   const outcome = PANTHER_OUTCOME_MAP[String(event.value || '').trim()];
   if (!outcome) {
     if (statusColumn) sheet.getRange(event.range.getRow(), statusColumn).clearContent();
@@ -107,11 +95,11 @@ function handlePantherLeadOutcomeEdit(event) {
   const row = sheet.getRange(event.range.getRow(), 1, 1, lastColumn).getValues()[0];
   const displayRow = sheet.getRange(event.range.getRow(), 1, 1, lastColumn).getDisplayValues()[0];
   const valueFor = function (header) {
-    const index = headers.indexOf(header);
+    const index = pantherHeaderIndex_(headers, header);
     return index >= 0 ? displayRow[index] : '';
   };
   const rawValueFor = function (header) {
-    const index = headers.indexOf(header);
+    const index = pantherHeaderIndex_(headers, header);
     return index >= 0 ? row[index] : '';
   };
   const isoDate = function (value) {
@@ -122,22 +110,30 @@ function handlePantherLeadOutcomeEdit(event) {
 
   const properties = PropertiesService.getScriptProperties();
   const webhookUrl = properties.getProperty('PANTHER_OUTCOME_WEBHOOK_URL');
-  const webhookSecret = properties.getProperty('PANTHER_OUTCOME_WEBHOOK_SECRET');
+  const webhookSecret = properties.getProperty('CRM_WEBHOOK_SECRET');
   if (!webhookUrl || !webhookSecret) {
     if (statusColumn) sheet.getRange(event.range.getRow(), statusColumn).setValue('غير مفعّل');
     return;
   }
 
+  const leadIdColumn = pantherHeaderIndex_(headers, 'leadId') + 1;
+  let leadId = String(valueFor('leadId') || '').trim();
+  if (!leadId && leadIdColumn) {
+    // Historical rows created before server IDs were stored still need a
+    // stable identifier for deduplication. Persist it once and reuse it.
+    leadId = Utilities.getUuid();
+    sheet.getRange(event.range.getRow(), leadIdColumn).setValue(leadId);
+  }
+
   const occurredAt = new Date().toISOString();
   const payload = {
-    leadId: valueFor('leadId'),
+    leadId: leadId,
     phone: valueFor('phone') || displayRow[2],
     outcome: outcome,
     outcomeReason: valueFor('outcomeReason'),
     landingUrl: valueFor('landingUrl'),
     fbclid: valueFor('fbclid'),
     fbp: valueFor('fbp'),
-    marketingConsent: valueFor('marketingConsent').toLowerCase() === 'granted',
     submittedAt: isoDate(rawValueFor('submittedAt') || row[0]),
     occurredAt: occurredAt,
   };
@@ -159,7 +155,7 @@ function handlePantherLeadOutcomeEdit(event) {
 
     const status = responseBody.delivery === 'sent'
       ? 'تم الإرسال: ' + (responseBody.events || []).join(' + ')
-      : 'لم يُرسل: لا توجد موافقة تسويقية أو إعدادات ميتا ناقصة';
+      : 'لم يُرسل: إعدادات ميتا ناقصة';
     if (updatedAtColumn) sheet.getRange(event.range.getRow(), updatedAtColumn).setValue(occurredAt);
     if (statusColumn) sheet.getRange(event.range.getRow(), statusColumn).setValue(status);
   } catch (error) {

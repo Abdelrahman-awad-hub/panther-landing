@@ -28,6 +28,10 @@ export async function POST(request: NextRequest) {
       ...body,
       warehouseInterest,
       leadQualification,
+      // Tracking for this Egypt-focused landing page is initialized on load.
+      // Enforce the server value so stale or forged client consent state
+      // cannot suppress the browser/server conversion pair.
+      marketingConsent: true,
       leadId,
       userAgent:   request.headers.get('user-agent') ?? '',
       clientIp:    getClientIp(request),

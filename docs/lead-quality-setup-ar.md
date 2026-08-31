@@ -25,19 +25,26 @@
 - اسم البراند والمحافظة والملاحظات الداخلية لا تُرسل.
 - رقم الهاتف يخرج مشفرًا بـ SHA-256 فقط، ومعه رقم العميل الداخلي
   المشفر وبيانات النقر المتاحة لتحسين المطابقة.
-- إذا لم يوافق العميل الأصلي على التتبع الاختياري، تُحفظ حالته في الشيت
-  لكن لا تُرسل إلى منصات الإعلانات.
+- التتبع في اللاندنج المصرية يبدأ تلقائيًا؛ لا توجد نافذة موافقة تحجب إرسال
+  مراحل الجودة بعد حفظ العميل.
 
 ## تفعيل المزامنة مرة واحدة بعد النشر
 
 1. أضف في إعدادات Vercel قيمة سرية جديدة باسم `CRM_WEBHOOK_SECRET`؛ يجب أن
    تكون عشوائية وطولها 32 حرفًا على الأقل.
-2. افتح شيت العملاء ثم **Extensions → Apps Script**.
-3. الصق محتوى الملف `scripts/google-sheets-lead-outcomes.gs` واحفظه.
-4. شغّل الدالة `configurePantherOutcomeSync` مرة واحدة.
-5. اكتب رابط `https://landing.panther-express.com` ثم نفس الرمز السري الموجود
-   في Vercel ووافق على صلاحيات السكربت.
-6. جرّب على عميل اختباري وافتح `metaOutcomeStatus`. النجاح يظهر بالشكل:
+2. أنشئ مشروع Apps Script مستقل، ثم الصق محتوى الملف
+   `scripts/google-sheets-lead-outcomes.gs` واحفظه.
+3. أضف ثلاث **Script Properties**: رقم شيت عملاء الموقع في
+   `PANTHER_SPREADSHEET_ID`، والرابط الكامل
+   `https://landing.panther-express.com/api/lead-outcome` في
+   `PANTHER_OUTCOME_WEBHOOK_URL`، ونفس سر Vercel في `CRM_WEBHOOK_SECRET`.
+4. شغّل الدالة `configurePantherOutcomeSync` مرة واحدة ووافق على صلاحيات
+   الوصول للشيت.
+5. تأكد من وجود Trigger واحد فقط من نوع **From spreadsheet - On edit** للدالة
+   `handlePantherLeadOutcomeEdit`.
+6. السكربت يحافظ على الأعمدة الحالية A:V كما هي، ويضيف حقول الجودة والنتيجة
+   فقط في W:AD.
+7. جرّب على عميل اختباري وافتح `metaOutcomeStatus`. النجاح يظهر بالشكل:
    `تم الإرسال: QualifiedLead`.
 
 ## إعداد Meta بعد وصول الأحداث

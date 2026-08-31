@@ -100,8 +100,6 @@ async function sendMetaLead(data: LeadSubmission): Promise<ProviderResult> {
  * QualifiedLead, or CompleteRegistration reporting.
  */
 export async function sendMetaLeadOutcome(data: LeadOutcomeUpdate): Promise<ProviderResult> {
-  if (!data.marketingConsent) return 'skipped'
-
   const occurredAt = data.occurredAt ? Date.parse(data.occurredAt) : Date.now()
   const eventTime = Number.isFinite(occurredAt)
     ? Math.floor(occurredAt / 1000)
@@ -196,12 +194,11 @@ async function sendTikTokLead(data: LeadSubmission): Promise<ProviderResult> {
 }
 
 /**
- * Sends only a stored lead and only after explicit marketing consent. Provider
- * failures never roll back the lead or expose credentials to the browser.
+ * Sends only a validated, stored lead. Browser and server copies share the
+ * same event ID for platform deduplication. Provider failures never roll back
+ * the lead or expose credentials to the browser.
  */
 export async function sendLeadConversions(data: LeadSubmission): Promise<ConversionDelivery> {
-  if (!data.marketingConsent) return { meta: 'skipped', tiktok: 'skipped' }
-
   const [meta, tiktok] = await Promise.allSettled([sendMetaLead(data), sendTikTokLead(data)])
   if (meta.status === 'rejected') console.error('[conversions] Meta delivery failed:', meta.reason)
   if (tiktok.status === 'rejected') console.error('[conversions] TikTok delivery failed:', tiktok.reason)

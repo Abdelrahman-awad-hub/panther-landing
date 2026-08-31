@@ -6,7 +6,6 @@ import { useLocale, useTranslations } from 'next-intl'
 import { AlertCircle, Info } from 'lucide-react'
 import { trackEvent } from '@/lib/analytics'
 import { captureLeadAttribution } from '@/lib/attribution'
-import { getMarketingConsent } from '@/lib/marketing-consent'
 import { classifyLead, needsWarehouseQuestion, VOLUME_CATEGORIES } from '@/lib/lead-qualification'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -99,7 +98,6 @@ export function LeadFormCore({ source = 'section', onSuccess, autoFocus = false 
           website_confirm: honeypot,
           formSource: source,
           locale,
-          marketingConsent: getMarketingConsent() === 'granted',
           ...captureLeadAttribution(),
         }),
       })

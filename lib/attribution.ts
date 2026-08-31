@@ -1,7 +1,5 @@
 'use client'
 
-import { readCookie } from '@/lib/marketing-consent'
-
 export type LeadAttribution = {
   referrerUrl: string
   landingUrl: string
@@ -18,6 +16,18 @@ export type LeadAttribution = {
 }
 
 const STORAGE_KEY = 'panther_lead_attribution_v1'
+
+function readCookie(name: string): string {
+  if (typeof document === 'undefined') return ''
+
+  const prefix = `${encodeURIComponent(name)}=`
+  const match = document.cookie
+    .split(';')
+    .map((part) => part.trim())
+    .find((part) => part.startsWith(prefix))
+
+  return match ? decodeURIComponent(match.slice(prefix.length)) : ''
+}
 
 function fromCurrentPage(): LeadAttribution {
   const params = new URLSearchParams(window.location.search)
