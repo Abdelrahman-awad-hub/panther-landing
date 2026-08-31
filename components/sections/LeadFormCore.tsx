@@ -44,8 +44,8 @@ const GOVERNORATES: { value: string; ar: string }[] = [
 
 export const PITCH_POINTS = [
   { en: 'Protect and improve your delivery rate', ar: 'نحافظ على معدل تسليمك ونشتغل على تحسينه' },
-  { en: 'Free inspection nationwide', ar: 'معاينة مجانية في كل مصر' },
-  { en: 'Free exchanges and returns', ar: 'استبدال ومرتجعات من غير رسوم إضافية' },
+  { en: 'Inspection with no additional fees nationwide', ar: 'معاينة من غير رسوم إضافية في كل مصر' },
+  { en: 'Exchanges and returns with no additional fees', ar: 'استبدال ومرتجعات من غير رسوم إضافية' },
   { en: 'Flexible warehousing and fulfillment', ar: 'تخزين وتجهيز وشحن بمرونة' },
 ]
 

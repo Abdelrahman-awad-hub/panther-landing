@@ -60,14 +60,14 @@
   pointer-events: none;
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.34), transparent);
   transform: skewX(-18deg) translateX(-240%);
-  animation: panther-cta-shimmer 4.8s ease-in-out infinite;
+  animation: panther-cta-shimmer 2.2s linear infinite;
 }
 
 @keyframes panther-cta-shimmer {
-  0%, 68%, 100% {
+  0% {
     transform: skewX(-18deg) translateX(-240%);
   }
-  82% {
+  100% {
     transform: skewX(-18deg) translateX(650%);
   }
 }
