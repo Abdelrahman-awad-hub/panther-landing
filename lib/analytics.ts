@@ -22,6 +22,11 @@ const EVENT_FIELDS = [
   'volume_category',
   'lead_qualification',
   'warehouse_interest',
+  'engagement_seconds',
+  'scroll_percent',
+  'story_id',
+  'story_name',
+  'audience_signal',
 ] as const
 
 /**

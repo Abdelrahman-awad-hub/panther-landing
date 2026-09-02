@@ -73,6 +73,18 @@
   "trustedBrands": {
     "title": "Online Brands That Trust Panther"
   },
+  "customerStories": {
+    "badge": "Real Experiences",
+    "title": "Hear from Brands Shipping with Panther",
+    "subtitle": "Online brand owners share their experience with our support, delivery and order operations.",
+    "videoTitle": "Panther customer story",
+    "play": "Watch Their Story",
+    "story0": "A Panther Customer",
+    "story1": "Morshedy",
+    "story2": "Point Chemical",
+    "story3": "Sparko",
+    "swipeHint": "Swipe to see more stories"
+  },
   "warehousing": {
     "badge": "Warehousing, Packing & Shipping",
     "title": "Store with Panther and Leave Operations to Us",

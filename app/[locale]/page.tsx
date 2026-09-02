@@ -8,20 +8,24 @@ import { WarehousingSection } from '@/components/sections/Warehousing'
 import { ShopifyIntegrationSection } from '@/components/sections/ShopifyIntegration'
 import { SellerHighlightsSection } from '@/components/sections/SellerHighlights'
 import { LeadFormSection } from '@/components/sections/LeadForm'
+import { CustomerStoriesSection } from '@/components/sections/CustomerStories'
 import { SellerCTA } from '@/components/sections/SellerCTA'
 import { SocialDock } from '@/components/ui/SocialDock'
 import { env } from '@/lib/env'
+import { EngagementTracker } from '@/components/tracking/EngagementTracker'
 
 export default function HomePage() {
   const sellerPortalUrl = env.sellerPortalUrl
 
   return (
     <>
+      <EngagementTracker />
       <Header sellerPortalUrl={sellerPortalUrl} />
       <main>
         <HeroSection />
         <TrustedBrandsStrip />
         <LeadFormSection id="join" source="mid_page" />
+        <CustomerStoriesSection />
         <AboutSection />
         <ServicesSection />
         <WarehousingSection />
