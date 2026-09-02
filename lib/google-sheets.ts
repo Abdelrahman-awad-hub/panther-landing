@@ -44,6 +44,15 @@ export async function appendLeadToSheet(data: LeadSubmission): Promise<void> {
     data.fbp,
     data.ttp,
     '', '', '', '',
+    data.firstTouchReferrerUrl, data.firstTouchLandingUrl,
+    data.firstTouchUtmSource, data.firstTouchUtmMedium, data.firstTouchUtmCampaign,
+    data.firstTouchUtmTerm, data.firstTouchUtmContent,
+    data.firstTouchGclid, data.firstTouchFbclid, data.firstTouchTtclid,
+    data.lastTouchReferrerUrl, data.lastTouchLandingUrl,
+    data.lastTouchUtmSource, data.lastTouchUtmMedium, data.lastTouchUtmCampaign,
+    data.lastTouchUtmTerm, data.lastTouchUtmContent,
+    data.lastTouchGclid, data.lastTouchFbclid, data.lastTouchTtclid,
+    data.clientId, data.sessionId,
   ]
   await sheets.spreadsheets.values.append({
     spreadsheetId: env.google.sheetId,
@@ -67,6 +76,20 @@ export async function appendLeadToSheet(data: LeadSubmission): Promise<void> {
       range: 'Sheet1!W1:AD1',
       valueInputOption: 'RAW',
       requestBody: { majorDimension: 'ROWS', values: trackingHeaders },
+    })
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: env.google.sheetId,
+      range: 'Sheet1!AE1:AZ1',
+      valueInputOption: 'RAW',
+      requestBody: { majorDimension: 'ROWS', values: [[
+        'firstTouchReferrerUrl', 'firstTouchLandingUrl', 'firstTouchUtmSource',
+        'firstTouchUtmMedium', 'firstTouchUtmCampaign', 'firstTouchUtmTerm',
+        'firstTouchUtmContent', 'firstTouchGclid', 'firstTouchFbclid', 'firstTouchTtclid',
+        'lastTouchReferrerUrl', 'lastTouchLandingUrl', 'lastTouchUtmSource',
+        'lastTouchUtmMedium', 'lastTouchUtmCampaign', 'lastTouchUtmTerm',
+        'lastTouchUtmContent', 'lastTouchGclid', 'lastTouchFbclid', 'lastTouchTtclid',
+        'clientId', 'sessionId',
+      ]] },
     })
     const spreadsheet = await sheets.spreadsheets.get({
       spreadsheetId: env.google.sheetId,

@@ -71,6 +71,29 @@ export function LeadFormCore({ source = 'section', onSuccess, autoFocus = false 
   const city = useWatch({ control, name: 'city' })
   const volumeCategory = useWatch({ control, name: 'volumeCategory' })
   const showWarehouseQuestion = needsWarehouseQuestion(city, volumeCategory)
+  const formRef = useRef<HTMLFormElement>(null)
+
+  useEffect(() => {
+    const element = formRef.current
+    if (!element) return
+    const key = `panther_form_view:${source}`
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) return
+      try {
+        if (sessionStorage.getItem(key)) return
+        sessionStorage.setItem(key, '1')
+      } catch {
+        // The event can still be emitted when storage is unavailable.
+      }
+      trackEvent('form_view', {
+        form_id: 'seller_application', form_name: 'seller_application',
+        form_source: source, language: locale,
+      })
+      observer.disconnect()
+    }, { threshold: 0.5 })
+    observer.observe(element)
+    return () => observer.disconnect()
+  }, [locale, source])
 
   useEffect(() => {
     if (autoFocus) setFocus('brandName')
@@ -79,8 +102,18 @@ export function LeadFormCore({ source = 'section', onSuccess, autoFocus = false 
   const startedRef = useRef(false)
   const handleFormStart = () => {
     if (startedRef.current) return
+    const key = `panther_form_start:${source}`
+    try {
+      if (sessionStorage.getItem(key)) return
+      sessionStorage.setItem(key, '1')
+    } catch {
+      // Component-level guard remains the fallback.
+    }
     startedRef.current = true
-    trackEvent('lead_form_start', { form_name: 'seller_application', form_source: source, language: locale })
+    trackEvent('lead_form_start', {
+      form_id: 'seller_application', form_name: 'seller_application',
+      form_source: source, language: locale,
+    })
   }
 
   const onSubmit = async (values: FormData) => {
@@ -106,9 +139,10 @@ export function LeadFormCore({ source = 'section', onSuccess, autoFocus = false 
       if (!data.leadId) throw new Error()
       setStatus('success')
       const eventPayload = {
-        form_name: 'seller_application', form_source: source, lead_id: data.leadId,
+        form_id: 'seller_application', form_name: 'seller_application', form_source: source, lead_id: data.leadId,
         event_id: data.leadId, lead_source: source, volume_category: values.volumeCategory,
         lead_qualification: leadQualification, warehouse_interest: warehouseInterest, language: locale,
+        service_type: 'cod_shipping', expected_shipments: values.volumeCategory, city: values.city,
       }
       trackEvent('panther_lead_success', eventPayload)
       if (leadQualification.startsWith('qualified_')) trackEvent('panther_qualified_lead', eventPayload)
@@ -116,7 +150,7 @@ export function LeadFormCore({ source = 'section', onSuccess, autoFocus = false 
     } catch (error) {
       setStatus('error')
       trackEvent('lead_form_error', {
-        form_name: 'seller_application', form_source: source,
+        form_id: 'seller_application', form_name: 'seller_application', form_source: source,
         error_type: error instanceof TypeError ? 'network' : 'submission', language: locale,
       })
     }
@@ -124,7 +158,8 @@ export function LeadFormCore({ source = 'section', onSuccess, autoFocus = false 
 
   const onInvalid = (invalidFields: Record<string, unknown>) => {
     trackEvent('lead_form_validation_error', {
-      form_name: 'seller_application', form_source: source,
+      form_id: 'seller_application', form_name: 'seller_application', form_source: source,
+      error_type: 'validation', field_name: Object.keys(invalidFields).sort()[0] ?? 'unknown',
       error_fields: Object.keys(invalidFields).sort().join(','), language: locale,
     })
   }
@@ -135,7 +170,7 @@ export function LeadFormCore({ source = 'section', onSuccess, autoFocus = false 
   const labelClass = 'text-xs font-bold uppercase tracking-wide text-gray-600'
 
   return (
-    <form onSubmit={handleSubmit(onSubmit, onInvalid)} onInput={handleFormStart} dir={isAr ? 'rtl' : 'ltr'} className="space-y-5">
+    <form ref={formRef} onSubmit={handleSubmit(onSubmit, onInvalid)} onInput={handleFormStart} dir={isAr ? 'rtl' : 'ltr'} className="space-y-5">
       <input type="text" tabIndex={-1} autoComplete="off" className="sr-only" aria-hidden="true" value={honeypot} onChange={(event) => setHoneypot(event.target.value)} />
 
       <div className="grid gap-4 sm:grid-cols-2">

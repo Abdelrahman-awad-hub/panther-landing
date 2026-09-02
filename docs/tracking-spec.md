@@ -12,6 +12,7 @@ never use GTM's native form-submit event.
 | `cta_click` | A commercial CTA is selected | `cta_name`, `cta_location`, `language` |
 | `contact_click` | WhatsApp, email, phone, or social profile is selected | `contact_method`, `contact_location`, `link_url`, `language` |
 | `lead_form_start` | First interaction with a seller application form | `form_name`, `form_source`, `language` |
+| `form_view` | At least 50% of a form becomes visible, once per form source per session | `form_id`, `form_name`, `form_source`, `language` |
 | `lead_form_validation_error` | A submit attempt fails browser validation | `form_name`, `form_source`, `error_fields`, `language` |
 | `lead_form_error` | The lead API does not confirm storage | `form_name`, `form_source`, `error_type`, `language` |
 | `panther_lead_success` | The API has validated and stored the lead | `lead_id`, `event_id`, `form_name`, `form_source`, `lead_source`, `volume_category`, `language` |
@@ -20,7 +21,9 @@ never use GTM's native form-submit event.
 | `shipment_track_result` | A tracking search finishes | `tracking_outcome`, `track_status` when found, `language` |
 | `language_switch` | The visitor selects the other language | `language` (destination language) |
 
-Every event also contains `page_path`, `page_location`, and `page_title`.
+Every event also contains `event_id`, `event_time`, `page_path`, `page_location`,
+`page_title`, `page_type`, first landing/referrer context, last-known campaign
+parameters, and GA client/session IDs when available.
 Customer phone numbers, brand names, entered URLs, and waybill numbers must
 never be sent to browser analytics or advertising tags. For server lead
 matching, only the normalized phone hash and non-sensitive identifiers listed
@@ -126,6 +129,10 @@ New quality and outcome fields are appended only in W:AD:
 `leadQualification`, `warehouseInterest`, `fbp`, `ttp`, `leadOutcome`,
 `outcomeReason`, `outcomeUpdatedAt`, `metaOutcomeStatus`.
 
+Attribution and GA identifiers are appended in AE:AZ. These preserve separate
+first-touch and latest-touch referrer, landing URL, UTM and click-ID values, followed
+by `clientId` and `sessionId`. The historical A:AD schema is not shifted.
+
 `marketingConsent` is retained as an always-granted legacy column so existing
 sheet positions do not shift. It no longer gates browser or server tracking.
 
@@ -136,7 +143,7 @@ is an additional CRM/GA4 quality signal and must not replace lead storage.
 
 ## Sales outcome feedback loop
 
-The `leadOutcome` column has three sales-owned choices:
+The `leadOutcome` column supports the full sales lifecycle:
 
 - `مؤهل` sends `QualifiedLead` to Meta.
 - `غير مناسب` sends the distinct custom event `PantherDisqualifiedLead`. It
@@ -144,6 +151,10 @@ The `leadOutcome` column has three sales-owned choices:
   for quality reporting and exclusion audiences.
 - `تم التعاقد` sends `QualifiedLead` and `CompleteRegistration`. A deterministic
   event ID (`leadId:eventName`) makes retries idempotent.
+- `تم التواصل`, `تم حجز اجتماع`, `تم إنشاء الحساب`, `أول شحنة`, `عميل نشط`, and
+  `فقدنا العميل` preserve the steps between raw lead and activated merchant.
+- Every lifecycle state is also eligible for GA4 Measurement Protocol delivery when
+  `GA4_API_SECRET` is configured and the lead has a captured `clientId`.
 
 The Apps Script in `scripts/google-sheets-lead-outcomes.gs` watches this column
 using an installable edit trigger and calls `POST /api/lead-outcome`. The route

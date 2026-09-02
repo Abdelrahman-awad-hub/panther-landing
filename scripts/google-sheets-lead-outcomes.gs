@@ -7,8 +7,14 @@
  */
 
 const PANTHER_OUTCOME_MAP = Object.freeze({
+  'تم التواصل': 'contacted',
   'مؤهل': 'qualified',
+  'تم حجز اجتماع': 'meeting_booked',
+  'تم إنشاء الحساب': 'account_created',
+  'أول شحنة': 'first_shipment',
+  'عميل نشط': 'activated_customer',
   'غير مناسب': 'not_quality',
+  'فقدنا العميل': 'lost',
   'تم التعاقد': 'contracted',
 });
 
@@ -134,6 +140,8 @@ function handlePantherLeadOutcomeEdit(event) {
     landingUrl: valueFor('landingUrl'),
     fbclid: valueFor('fbclid'),
     fbp: valueFor('fbp'),
+    clientId: valueFor('clientId'),
+    sessionId: valueFor('sessionId'),
     submittedAt: isoDate(rawValueFor('submittedAt') || row[0]),
     occurredAt: occurredAt,
   };
@@ -153,9 +161,9 @@ function handlePantherLeadOutcomeEdit(event) {
       throw new Error('HTTP ' + responseCode);
     }
 
-    const status = responseBody.delivery === 'sent'
+    const status = responseBody.delivery && responseBody.delivery.meta === 'sent'
       ? 'تم الإرسال: ' + (responseBody.events || []).join(' + ')
-      : 'لم يُرسل: إعدادات ميتا ناقصة';
+      : 'تم الحفظ — راجع إعدادات Meta/GA4';
     if (updatedAtColumn) sheet.getRange(event.range.getRow(), updatedAtColumn).setValue(occurredAt);
     if (statusColumn) sheet.getRange(event.range.getRow(), statusColumn).setValue(status);
   } catch (error) {
