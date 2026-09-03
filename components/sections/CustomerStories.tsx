@@ -26,7 +26,7 @@ export function CustomerStoriesSection() {
   }
 
   return (
-    <section className="bg-zinc-50 py-14 sm:py-20" aria-labelledby="customer-stories-title">
+    <section className="bg-zinc-50 py-12 sm:py-20" aria-labelledby="customer-stories-title">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto mb-8 max-w-2xl text-center sm:mb-10">
           <p className="mb-3 text-xs font-bold uppercase tracking-[0.16em] text-panther-red">

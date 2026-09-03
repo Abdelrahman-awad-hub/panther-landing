@@ -14,7 +14,7 @@ export function LeadFormSection({ id = 'join', source = 'section' }: LeadFormSec
   const isAr = locale === 'ar'
 
   return (
-    <section id={id} className="relative scroll-mt-20 bg-white py-20 lg:py-28 overflow-hidden">
+    <section id={id} className="relative scroll-mt-20 overflow-hidden bg-white py-14 sm:py-20 lg:py-28">
       <div
         className="absolute inset-0 pointer-events-none select-none"
         style={{ background: 'radial-gradient(ellipse 55% 65% at 72% 50%, rgba(229,0,26,0.03) 0%, transparent 65%)' }}
@@ -22,7 +22,7 @@ export function LeadFormSection({ id = 'join', source = 'section' }: LeadFormSec
       />
 
       <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid lg:grid-cols-5 gap-12 lg:gap-16 items-start">
+        <div className="grid gap-8 sm:gap-12 lg:grid-cols-5 lg:gap-16 items-start">
 
           {/* Left: Pitch column */}
           <div className="lg:col-span-2 lg:pt-2 relative">
@@ -49,7 +49,7 @@ export function LeadFormSection({ id = 'join', source = 'section' }: LeadFormSec
               {isAr ? <>سجّل الآن وابدأ<br />مع بانثر</> : <>Sign Up Now and<br />Start with Panther</>}
             </h2>
 
-            <p className="relative text-gray-500 text-base leading-relaxed mb-10">
+            <p className="relative mb-6 text-base leading-relaxed text-gray-500 sm:mb-10">
               {isAr
                 ? 'سيب بيانات البراند بتاعك، وفريق Panther هيتواصل معاك بأفضل خطة Logistics مناسبة لحجم شغلك.'
                 : 'Share your brand details and the Panther team will reach out with the best logistics plan for your business size.'}

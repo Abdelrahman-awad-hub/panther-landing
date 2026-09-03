@@ -42,7 +42,7 @@ export function ShopifyIntegrationSection() {
   }, [open])
 
   return (
-    <section id="shopify" className="bg-[#F9F8F7] py-24 lg:py-32">
+    <section id="shopify" className="bg-[#F9F8F7] py-16 sm:py-24 lg:py-32">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           {/* Copy */}

@@ -9,7 +9,7 @@ export function ServicesSection() {
   const t = useTranslations('services')
 
   return (
-    <section id="services" className="bg-white py-24 lg:py-32">
+    <section id="services" className="bg-white py-16 sm:py-24 lg:py-32">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-14">
           <div className="inline-flex items-center bg-panther-red/8 border border-panther-red/20 rounded-full px-4 py-1.5 mb-6">

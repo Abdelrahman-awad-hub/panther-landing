@@ -1,5 +1,6 @@
 export const env = {
-  sellerPortalUrl: process.env.NEXT_PUBLIC_SELLER_PORTAL_URL ?? '#',
+  sellerPortalUrl: process.env.NEXT_PUBLIC_SELLER_PORTAL_URL
+    ?? 'https://panther-express.top/admin-area/login.php',
   panther: {
     apiBaseUrl: process.env.PANTHER_API_BASE_URL || 'https://panther-express.top',
   },

@@ -71,6 +71,7 @@ export function LeadFormCore({ source = 'section', onSuccess, autoFocus = false 
   const city = useWatch({ control, name: 'city' })
   const volumeCategory = useWatch({ control, name: 'volumeCategory' })
   const showWarehouseQuestion = needsWarehouseQuestion(city, volumeCategory)
+  const formId = `seller_application_${source}`
   const formRef = useRef<HTMLFormElement>(null)
 
   useEffect(() => {
@@ -86,14 +87,14 @@ export function LeadFormCore({ source = 'section', onSuccess, autoFocus = false 
         // The event can still be emitted when storage is unavailable.
       }
       trackEvent('form_view', {
-        form_id: 'seller_application', form_name: 'seller_application',
+        form_id: formId, form_name: 'seller_application',
         form_source: source, language: locale,
       })
       observer.disconnect()
     }, { threshold: 0.5 })
     observer.observe(element)
     return () => observer.disconnect()
-  }, [locale, source])
+  }, [formId, locale, source])
 
   useEffect(() => {
     if (autoFocus) setFocus('brandName')
@@ -111,7 +112,7 @@ export function LeadFormCore({ source = 'section', onSuccess, autoFocus = false 
     }
     startedRef.current = true
     trackEvent('lead_form_start', {
-      form_id: 'seller_application', form_name: 'seller_application',
+      form_id: formId, form_name: 'seller_application',
       form_source: source, language: locale,
     })
   }
@@ -139,7 +140,7 @@ export function LeadFormCore({ source = 'section', onSuccess, autoFocus = false 
       if (!data.leadId) throw new Error()
       setStatus('success')
       const eventPayload = {
-        form_id: 'seller_application', form_name: 'seller_application', form_source: source, lead_id: data.leadId,
+        form_id: formId, form_name: 'seller_application', form_source: source, lead_id: data.leadId,
         event_id: data.leadId, lead_source: source, volume_category: values.volumeCategory,
         lead_qualification: leadQualification, warehouse_interest: warehouseInterest, language: locale,
         service_type: 'cod_shipping', expected_shipments: values.volumeCategory, city: values.city,
@@ -150,7 +151,7 @@ export function LeadFormCore({ source = 'section', onSuccess, autoFocus = false 
     } catch (error) {
       setStatus('error')
       trackEvent('lead_form_error', {
-        form_id: 'seller_application', form_name: 'seller_application', form_source: source,
+        form_id: formId, form_name: 'seller_application', form_source: source,
         error_type: error instanceof TypeError ? 'network' : 'submission', language: locale,
       })
     }
@@ -158,7 +159,7 @@ export function LeadFormCore({ source = 'section', onSuccess, autoFocus = false 
 
   const onInvalid = (invalidFields: Record<string, unknown>) => {
     trackEvent('lead_form_validation_error', {
-      form_id: 'seller_application', form_name: 'seller_application', form_source: source,
+      form_id: formId, form_name: 'seller_application', form_source: source,
       error_type: 'validation', field_name: Object.keys(invalidFields).sort()[0] ?? 'unknown',
       error_fields: Object.keys(invalidFields).sort().join(','), language: locale,
     })
@@ -170,21 +171,21 @@ export function LeadFormCore({ source = 'section', onSuccess, autoFocus = false 
   const labelClass = 'text-xs font-bold uppercase tracking-wide text-gray-600'
 
   return (
-    <form ref={formRef} onSubmit={handleSubmit(onSubmit, onInvalid)} onInput={handleFormStart} dir={isAr ? 'rtl' : 'ltr'} className="space-y-5">
+    <form id={formId} ref={formRef} noValidate onSubmit={handleSubmit(onSubmit, onInvalid)} onInput={handleFormStart} dir={isAr ? 'rtl' : 'ltr'} className="space-y-5">
       <input type="text" tabIndex={-1} autoComplete="off" className="sr-only" aria-hidden="true" value={honeypot} onChange={(event) => setHoneypot(event.target.value)} />
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
           <Label className={labelClass}>{t('brandName')} <span className="text-panther-red">*</span></Label>
           <Controller control={control} name="brandName" rules={{ required: true }} render={({ field }) => (
-            <Input {...field} autoComplete="organization" placeholder={t('brandNamePlaceholder')} className={fieldClass} />
+            <Input {...field} required aria-required="true" aria-invalid={Boolean(errors.brandName)} autoComplete="organization" placeholder={t('brandNamePlaceholder')} className={fieldClass} />
           )} />
           {errors.brandName && <p className="text-xs text-panther-red">{t('brandNameRequired')}</p>}
         </div>
         <div className="space-y-1.5">
           <Label className={labelClass}>{t('phone')} <span className="text-panther-red">*</span></Label>
           <Controller control={control} name="phone" rules={{ required: true, pattern: EG_PHONE }} render={({ field }) => (
-            <Input {...field} type="tel" inputMode="tel" autoComplete="tel" dir="ltr" placeholder={t('phonePlaceholder')} className={fieldClass} />
+            <Input {...field} required aria-required="true" aria-invalid={Boolean(errors.phone)} type="tel" inputMode="tel" autoComplete="tel" dir="ltr" placeholder={t('phonePlaceholder')} className={fieldClass} />
           )} />
           {errors.phone && <p className="text-xs text-panther-red">{errors.phone.type === 'required' ? t('phoneRequired') : t('phoneInvalid')}</p>}
         </div>
@@ -195,7 +196,7 @@ export function LeadFormCore({ source = 'section', onSuccess, autoFocus = false 
           <Label className={labelClass}>{t('city')} <span className="text-panther-red">*</span></Label>
           <Controller control={control} name="city" rules={{ required: true }} render={({ field }) => (
             <Select onValueChange={field.onChange} value={field.value || ''}>
-              <SelectTrigger className={`${fieldClass} w-full`}>
+              <SelectTrigger aria-required="true" aria-invalid={Boolean(errors.city)} className={`${fieldClass} w-full`}>
                 <span className="flex-1 truncate text-start">{field.value ? (isAr ? GOVERNORATES.find((item) => item.value === field.value)?.ar : field.value) : t('cityPlaceholder')}</span>
               </SelectTrigger>
               <SelectContent className="max-h-64 border-gray-200 bg-white text-gray-900">
@@ -211,7 +212,7 @@ export function LeadFormCore({ source = 'section', onSuccess, autoFocus = false 
           <Label className={labelClass}>{t('volume')} <span className="text-panther-red">*</span></Label>
           <Controller control={control} name="volumeCategory" rules={{ required: true }} render={({ field }) => (
             <Select onValueChange={field.onChange} value={field.value || ''}>
-              <SelectTrigger className={`${fieldClass} w-full`}>
+              <SelectTrigger aria-required="true" aria-invalid={Boolean(errors.volumeCategory)} className={`${fieldClass} w-full`}>
                 <span className="flex-1 truncate text-start">{field.value ? t(`volume${field.value}`) : t('volumePlaceholder')}</span>
               </SelectTrigger>
               <SelectContent className="border-gray-200 bg-white text-gray-900">
@@ -239,7 +240,7 @@ export function LeadFormCore({ source = 'section', onSuccess, autoFocus = false 
           <p className="text-xs leading-relaxed text-zinc-500">{t('warehouseHint')}</p>
           <Controller control={control} name="warehouseInterest" rules={{ required: showWarehouseQuestion }} render={({ field }) => (
             <Select onValueChange={field.onChange} value={field.value || ''}>
-              <SelectTrigger className={`${fieldClass} w-full`}>
+              <SelectTrigger aria-required="true" aria-invalid={Boolean(errors.warehouseInterest)} className={`${fieldClass} w-full`}>
                 <span className="flex-1 truncate text-start">{field.value ? t(field.value === 'yes' ? 'warehouseYes' : 'warehouseNo') : t('warehouseQuestion')}</span>
               </SelectTrigger>
               <SelectContent className="border-gray-200 bg-white text-gray-900">
@@ -261,6 +262,12 @@ export function LeadFormCore({ source = 'section', onSuccess, autoFocus = false 
       <Button type="submit" disabled={isSubmitting} className="h-14 w-full rounded-xl bg-panther-red text-base font-bold text-white btn-red-glow hover:bg-panther-red-dark disabled:opacity-50">
         {isSubmitting ? t('submitting') : t('submit')}
       </Button>
+      <p className="text-center text-xs leading-5 text-zinc-500">
+        {t('privacyNote')}{' '}
+        <a href={`/${locale}/privacy`} className="font-semibold text-zinc-800 underline underline-offset-2 hover:text-panther-red">
+          {t('privacyLink')}
+        </a>
+      </p>
     </form>
   )
 }

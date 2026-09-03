@@ -13,7 +13,7 @@ export function WarehousingSection() {
   const locale = useLocale()
 
   return (
-    <section className="overflow-hidden bg-panther-black py-20 text-white lg:py-28">
+    <section className="overflow-hidden bg-panther-black py-16 text-white sm:py-20 lg:py-28">
       <div className="mx-auto grid max-w-7xl gap-12 px-4 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:px-8">
         <div className="self-center">
           <div className="mb-5 inline-flex rounded-full border border-panther-red/40 bg-panther-red/10 px-4 py-1.5 text-sm font-semibold text-panther-red-light">

@@ -170,7 +170,9 @@
     "phoneRequired": "Phone number is required",
     "phoneInvalid": "Please enter a valid Egyptian phone number",
     "volumeRequired": "Please select your monthly shipment volume",
-    "urlInvalid": "Please enter a valid URL (starting with https://)"
+    "urlInvalid": "Please enter a valid URL (starting with https://)",
+    "privacyNote": "By submitting, you agree that Panther may use these details to contact you about its services under our",
+    "privacyLink": "Privacy Policy"
   },
   "sellerCta": {
     "pill": "Sign Up Now and Start with Panther",
@@ -211,7 +213,8 @@
     "tagline": "Fast. Reliable. Built for Sellers.",
     "copyright": "© 2024 Panther Express. All rights reserved.",
     "contact": "Contact Us",
-    "track": "Track Order"
+    "track": "Track Order",
+    "privacy": "Privacy Policy"
   },
   "track": {
     "badge": "Order Tracking",

@@ -12,6 +12,7 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 const cairo = Cairo({ subsets: ['arabic'], variable: '--font-cairo' })
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://landing.panther-express.com'),
   title: 'Panther Express — Ship Faster, Grow Bigger',
   description: "Egypt's trusted logistics partner for e-commerce brands and growing merchants.",
   icons: { icon: '/favicon.svg' },

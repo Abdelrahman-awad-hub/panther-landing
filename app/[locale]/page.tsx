@@ -14,6 +14,17 @@ import { SocialDock } from '@/components/ui/SocialDock'
 import { env } from '@/lib/env'
 import { EngagementTracker } from '@/components/tracking/EngagementTracker'
 
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params
+  const language = locale === 'ar' ? 'ar' : 'en'
+  return {
+    alternates: {
+      canonical: `/${language}`,
+      languages: { ar: '/ar', en: '/en', 'x-default': '/ar' },
+    },
+  }
+}
+
 export default function HomePage() {
   const sellerPortalUrl = env.sellerPortalUrl
 
@@ -39,3 +50,4 @@ export default function HomePage() {
     </>
   )
 }
+import type { Metadata } from 'next'
