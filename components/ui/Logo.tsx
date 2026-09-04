@@ -20,7 +20,7 @@ export function Logo({ locale, className = '', size = 'md', dark = false }: Logo
         width={w}
         height={h}
         priority
-        className={dark ? 'invert' : ''}
+        className={`${dark ? 'invert ' : ''}h-auto w-auto`}
       />
     </Link>
   )

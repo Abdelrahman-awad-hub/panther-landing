@@ -12,26 +12,31 @@ never use GTM's native form-submit event.
 | `cta_click` | A commercial CTA is selected | `cta_name`, `cta_location`, `language` |
 | `contact_click` | WhatsApp, email, phone, or social profile is selected | `contact_method`, `contact_location`, `link_url`, `language` |
 | `lead_form_start` | First interaction with a seller application form | `form_name`, `form_source`, `language` |
+| `form_view` | At least 50% of a form becomes visible, once per form source per session | `form_id`, `form_name`, `form_source`, `language` |
 | `lead_form_validation_error` | A submit attempt fails browser validation | `form_name`, `form_source`, `error_fields`, `language` |
 | `lead_form_error` | The lead API does not confirm storage | `form_name`, `form_source`, `error_type`, `language` |
 | `panther_lead_success` | The API has validated and stored the lead | `lead_id`, `event_id`, `form_name`, `form_source`, `lead_source`, `volume_category`, `language` |
-| `consent_update` | The visitor saves an optional tracking choice | `marketing_consent`, `language` |
+| `panther_qualified_lead` | A stored lead also matches Panther's pickup or warehousing rules | All lead-success parameters plus `lead_qualification`, `warehouse_interest` |
 | `shipment_track_search` | A valid tracking search starts | `language` |
 | `shipment_track_result` | A tracking search finishes | `tracking_outcome`, `track_status` when found, `language` |
 | `language_switch` | The visitor selects the other language | `language` (destination language) |
 
-Every event also contains `page_path`, `page_location`, and `page_title`.
+Every event also contains `event_id`, `event_time`, `page_path`, `page_location`,
+`page_title`, `page_type`, first landing/referrer context, last-known campaign
+parameters, and GA client/session IDs when available.
 Customer phone numbers, brand names, entered URLs, and waybill numbers must
-never be sent to browser analytics or advertising tags. For consented server
-lead matching, only the normalized phone hash and non-sensitive identifiers
-listed below may be sent.
+never be sent to browser analytics or advertising tags. For server lead
+matching, only the normalized phone hash and non-sensitive identifiers listed
+below may be sent.
 
-## Consent and server-side conversion delivery
+## Automatic tracking and server-side conversion delivery
 
-- GTM is not loaded until the visitor accepts optional tracking. Rejecting it
-  never blocks the website or the lead form.
-- A stored lead is sent to Meta CAPI and TikTok Events API only when
-  `marketingConsent` is `true`.
+- GTM loads automatically on every page through one Next.js `Script`
+  bootstrap in the locale layout. There is no consent popup or code-level
+  `denied` default blocking the container.
+- GA4, Meta Pixel, and TikTok Pixel remain owned by GTM. The application must
+  not add hardcoded copies of those tags.
+- Every validated and stored lead is sent to Meta CAPI and TikTok Events API.
 - Meta and TikTok receive the same `leadId` as the browser `event_id`, allowing
   the platforms to deduplicate browser and server copies.
 - Phone and external ID are normalized and SHA-256 hashed on the server. API
@@ -75,6 +80,8 @@ Create these variables exactly as written:
 - `DLV - form_source` → `form_source`
 - `DLV - lead_source` → `lead_source`
 - `DLV - volume_category` → `volume_category`
+- `DLV - lead_qualification` → `lead_qualification`
+- `DLV - warehouse_interest` → `warehouse_interest`
 - `DLV - language` → `language`
 - `DLV - cta_name` → `cta_name`
 - `DLV - cta_location` → `cta_location`
@@ -88,7 +95,6 @@ Create these variables exactly as written:
 - `DLV - page_path` → `page_path`
 - `DLV - page_location` → `page_location`
 - `DLV - page_title` → `page_title`
-- `DLV - marketing_consent` → `marketing_consent`
 
 ## GA4 event mapping
 
@@ -101,6 +107,7 @@ Create these variables exactly as written:
 | `lead_form_validation_error` | `form_validation_error` | `form_name`, `form_source`, `error_fields`, `language` |
 | `lead_form_error` | `form_error` | `form_name`, `form_source`, `error_type`, `language` |
 | `panther_lead_success` | `generate_lead` | `lead_id`, `event_id`, `lead_source`, `form_name`, `form_source`, `volume_category`, `language` |
+| `panther_qualified_lead` | `qualified_lead` | `lead_id`, `event_id`, `form_source`, `volume_category`, `lead_qualification`, `warehouse_interest`, `language` |
 | `shipment_track_search` | `shipment_track_search` | `language` |
 | `shipment_track_result` | `shipment_track_result` | `tracking_outcome`, `track_status`, `language` |
 | `language_switch` | `language_switch` | `language` |
@@ -110,12 +117,71 @@ are diagnostic funnel steps, not primary conversions.
 
 ## Lead sheet columns
 
-The append order is A:V:
+The existing website-leads schema in A:V is preserved exactly:
 
 `submittedAt`, `brandName`, `phone`, `city`, `volumeCategory`, `socialLink`,
 `websiteUrl`, `referrerUrl`, `landingUrl`, `utmSource`, `utmMedium`,
 `utmCampaign`, `utmTerm`, `utmContent`, `userAgent`, `leadId`, `formSource`,
 `locale`, `gclid`, `fbclid`, `ttclid`, `marketingConsent`.
+
+New quality and outcome fields are appended only in W:AD:
+
+`leadQualification`, `warehouseInterest`, `fbp`, `ttp`, `leadOutcome`,
+`outcomeReason`, `outcomeUpdatedAt`, `metaOutcomeStatus`.
+
+Attribution and GA identifiers are appended in AE:AZ. These preserve separate
+first-touch and latest-touch referrer, landing URL, UTM and click-ID values, followed
+by `clientId` and `sessionId`. The historical A:AD schema is not shifted.
+
+`marketingConsent` is retained as an always-granted legacy column so existing
+sheet positions do not shift. It no longer gates browser or server tracking.
+
+Qualification values are `qualified_pickup`, `qualified_warehouse`,
+`below_minimum`, `pickup_unavailable`, and `pending`. Advertising platforms
+continue receiving the stored lead event for optimization; the qualified event
+is an additional CRM/GA4 quality signal and must not replace lead storage.
+
+## Sales outcome feedback loop
+
+The `leadOutcome` column supports the full sales lifecycle:
+
+- `مؤهل` sends `QualifiedLead` to Meta.
+- `غير مناسب` sends the distinct custom event `PantherDisqualifiedLead`. It
+  must never be configured as the campaign optimization event; it is available
+  for quality reporting and exclusion audiences.
+- `تم التعاقد` sends `QualifiedLead` and `CompleteRegistration`. A deterministic
+  event ID (`leadId:eventName`) makes retries idempotent.
+- `تم التواصل`, `تم حجز اجتماع`, `تم إنشاء الحساب`, `أول شحنة`, `عميل نشط`, and
+  `فقدنا العميل` preserve the steps between raw lead and activated merchant.
+- Every lifecycle state is also eligible for GA4 Measurement Protocol delivery when
+  `GA4_API_SECRET` is configured and the lead has a captured `clientId`.
+
+The Apps Script in `scripts/google-sheets-lead-outcomes.gs` watches this column
+using an installable edit trigger and calls `POST /api/lead-outcome`. The route
+requires the server-only `CRM_WEBHOOK_SECRET`, validates every field, hashes the
+phone and external ID, and sends no free-text reason to Meta. `outcomeReason`
+stays in the sales sheet only.
+
+`metaOutcomeStatus` shows whether Meta received the outcome event, skipped it
+because Meta is not configured, or needs a retry.
+
+### One-time activation
+
+1. Add a random 32+ character `CRM_WEBHOOK_SECRET` to the deployed project's
+   server environment.
+2. Publish the reviewed code before connecting the sheet; the webhook must be
+   reachable over HTTPS.
+3. Create a standalone Apps Script project, paste
+   `scripts/google-sheets-lead-outcomes.gs`, and save.
+4. Add these Script Properties: `PANTHER_SPREADSHEET_ID` with the website-leads
+   spreadsheet ID, `PANTHER_OUTCOME_WEBHOOK_URL` with the full production
+   `/api/lead-outcome` URL, and `CRM_WEBHOOK_SECRET` with the exact same value
+   used by the deployed application.
+5. Run `configurePantherOutcomeSync` once and approve the requested
+   spreadsheet permissions. Confirm that exactly one **From spreadsheet - On
+   edit** trigger exists for `handlePantherLeadOutcomeEdit`.
+6. Change one test lead to each outcome and confirm both the
+   `metaOutcomeStatus` cell and Meta Test Events before using live data.
 
 ## Release verification
 
@@ -130,6 +196,5 @@ The append order is A:V:
   from the previous event.
 - Tag Assistant Console has no errors and all tags use the published container
   version intended for release.
-- Accept consent with an ad blocker enabled, submit one approved test lead and
-  verify that Meta/TikTok Test Events show the server event with the same
-  `event_id`. Reject consent and verify that neither server event is sent.
+- With an ad blocker enabled, submit one approved test lead and verify that
+  Meta/TikTok Test Events still show the server event with the same `event_id`.

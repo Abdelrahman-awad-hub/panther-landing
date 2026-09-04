@@ -18,7 +18,7 @@ export function SellerHighlightsSection({ sellerPortalUrl }: SellerHighlightsPro
   const locale = useLocale()
 
   return (
-    <section id="portal" className="bg-white py-24 lg:py-32">
+    <section id="portal" className="bg-white py-16 sm:py-24 lg:py-32">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-16 items-start">
           {/* Sticky text */}

@@ -15,4 +15,6 @@ export const clients: Client[] = [
   { id: 'firstorder', name: 'One Bond', category: 'Cosmetics',              logo: '/brands/oneBond2.jpg' },
   { id: 'sportone', name: 'Sport One',     category: 'Sportswear & Equipment',    logo: '/brands/SportsOne.png' },
   { id: 'point',   name: 'Point Chemical', category: 'Automotive Spare Parts',    logo: '/brands/point.jpg' },
+  { id: 'healthy-tasty', name: 'Healthy & Tasty', category: 'Healthy Food', logo: '/brands/healthy-tasty.png' },
+  { id: 'morshedy', name: 'Morshedy', category: 'Fashion', logo: '/brands/morshedy.jpg' },
 ]

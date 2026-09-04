@@ -78,7 +78,7 @@ export function LeadFormModal({ open, onClose }: LeadFormModalProps) {
           {/* Header */}
           <p className="flex items-center gap-2 text-panther-red text-xs font-bold tracking-[0.18em] uppercase mb-3">
             <span className="w-1.5 h-1.5 rounded-full bg-panther-red-light flex-shrink-0" aria-hidden="true" />
-            {isAr ? '٢٤س' : '24H'}
+            {isAr ? 'سجّل الآن' : 'Sign Up Now'}
           </p>
           <h2
             id="seller-modal-title"

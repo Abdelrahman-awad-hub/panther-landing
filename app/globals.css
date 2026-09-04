@@ -44,3 +44,37 @@
   outline: none;
   box-shadow: 0 0 0 2px rgba(229, 0, 26, 0.5);
 }
+
+.btn-red-shimmer {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.btn-red-shimmer::after {
+  content: '';
+  position: absolute;
+  inset-block: -35%;
+  inset-inline-start: -45%;
+  width: 28%;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.34), transparent);
+  transform: skewX(-18deg) translateX(-240%);
+  animation: panther-cta-shimmer 2.2s linear infinite;
+}
+
+@keyframes panther-cta-shimmer {
+  0% {
+    transform: skewX(-18deg) translateX(-240%);
+  }
+  100% {
+    transform: skewX(-18deg) translateX(650%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-red-shimmer::after {
+    display: none;
+    animation: none;
+  }
+}

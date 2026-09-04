@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto'
 import type { LeadSubmission } from '@/lib/lead-schema'
+import { META_OUTCOME_EVENTS, type LeadOutcomeUpdate } from '@/lib/lead-outcome'
 
 type ProviderResult = 'sent' | 'skipped' | 'failed'
 
@@ -20,6 +21,35 @@ function normalizeEgyptianPhone(phone: string) {
   return digits
 }
 
+function metaConfig() {
+  const pixelId = process.env.META_PIXEL_ID
+  const accessToken = process.env.META_CAPI_ACCESS_TOKEN
+  if (!pixelId || !accessToken) return null
+
+  const apiVersion = process.env.META_GRAPH_API_VERSION || 'v23.0'
+  const url = new URL(`https://graph.facebook.com/${apiVersion}/${encodeURIComponent(pixelId)}/events`)
+  url.searchParams.set('access_token', accessToken)
+  return { url }
+}
+
+async function postMetaEvents(events: Record<string, unknown>[]): Promise<ProviderResult> {
+  const config = metaConfig()
+  if (!config) return 'skipped'
+
+  const body: Record<string, unknown> = { data: events }
+  const metaTestEventCode = testEventCode(process.env.META_TEST_EVENT_CODE)
+  if (metaTestEventCode) body.test_event_code = metaTestEventCode
+
+  const response = await fetch(config.url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+    signal: AbortSignal.timeout(5000),
+  })
+  if (!response.ok) throw new Error(`Meta CAPI returned ${response.status}`)
+  return 'sent'
+}
+
 function eventTimestamp(data: LeadSubmission) {
   const timestamp = data.submittedAt ? Date.parse(data.submittedAt) : Date.now()
   return Number.isFinite(timestamp) ? Math.floor(timestamp / 1000) : Math.floor(Date.now() / 1000)
@@ -36,14 +66,6 @@ function metaFbc(data: LeadSubmission) {
 }
 
 async function sendMetaLead(data: LeadSubmission): Promise<ProviderResult> {
-  const pixelId = process.env.META_PIXEL_ID
-  const accessToken = process.env.META_CAPI_ACCESS_TOKEN
-  if (!pixelId || !accessToken) return 'skipped'
-
-  const apiVersion = process.env.META_GRAPH_API_VERSION || 'v23.0'
-  const url = new URL(`https://graph.facebook.com/${apiVersion}/${encodeURIComponent(pixelId)}/events`)
-  url.searchParams.set('access_token', accessToken)
-
   const userData: Record<string, string | string[]> = {
     ph: [sha256(normalizeEgyptianPhone(data.phone))],
     external_id: [sha256(data.leadId)],
@@ -54,32 +76,57 @@ async function sendMetaLead(data: LeadSubmission): Promise<ProviderResult> {
   const fbc = metaFbc(data)
   if (fbc) userData.fbc = fbc
 
-  const body: Record<string, unknown> = {
-    data: [{
-      event_name: 'Lead',
-      event_time: eventTimestamp(data),
-      event_id: data.leadId,
-      action_source: 'website',
-      event_source_url: data.landingUrl || 'https://landing.panther-express.com/',
-      user_data: userData,
-      custom_data: {
-        form_name: 'seller_application',
-        form_source: data.formSource,
-        volume_category: data.volumeCategory,
-      },
-    }],
-  }
-  const metaTestEventCode = testEventCode(process.env.META_TEST_EVENT_CODE)
-  if (metaTestEventCode) body.test_event_code = metaTestEventCode
+  return postMetaEvents([{
+    event_name: 'Lead',
+    event_time: eventTimestamp(data),
+    event_id: data.leadId,
+    action_source: 'website',
+    event_source_url: data.landingUrl || 'https://landing.panther-express.com/',
+    user_data: userData,
+    custom_data: {
+      form_name: 'seller_application',
+      form_source: data.formSource,
+      volume_category: data.volumeCategory,
+      lead_qualification: data.leadQualification,
+      warehouse_interest: data.warehouseInterest,
+    },
+  }])
+}
 
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-    signal: AbortSignal.timeout(5000),
-  })
-  if (!response.ok) throw new Error(`Meta CAPI returned ${response.status}`)
-  return 'sent'
+/**
+ * Sends sales-qualified and contracted milestones back to Meta. The event IDs
+ * are deterministic, so retries or repeated sheet edits are deduplicated.
+ * A disqualified lead is a separate custom event and can never inflate Lead,
+ * QualifiedLead, or CompleteRegistration reporting.
+ */
+export async function sendMetaLeadOutcome(data: LeadOutcomeUpdate): Promise<ProviderResult> {
+  const occurredAt = data.occurredAt ? Date.parse(data.occurredAt) : Date.now()
+  const eventTime = Number.isFinite(occurredAt)
+    ? Math.floor(occurredAt / 1000)
+    : Math.floor(Date.now() / 1000)
+  const userData: Record<string, string | string[]> = {
+    ph: [sha256(normalizeEgyptianPhone(data.phone))],
+    external_id: [sha256(data.leadId)],
+  }
+  if (data.fbp) userData.fbp = data.fbp
+  if (data.fbclid) {
+    const submittedAt = data.submittedAt ? Date.parse(data.submittedAt) : occurredAt
+    const clickTimestamp = Number.isFinite(submittedAt) ? submittedAt : occurredAt
+    userData.fbc = `fb.1.${clickTimestamp}.${data.fbclid}`
+  }
+  const events = META_OUTCOME_EVENTS[data.outcome].map((eventName) => ({
+    event_name: eventName,
+    event_time: eventTime,
+    event_id: `${data.leadId}:${eventName}`,
+    action_source: 'system_generated',
+    user_data: userData,
+    custom_data: {
+      lead_event_source: 'panther_google_sheets_crm',
+      lead_status: data.outcome,
+    },
+  }))
+
+  return postMetaEvents(events)
 }
 
 async function sendTikTokLead(data: LeadSubmission): Promise<ProviderResult> {
@@ -112,6 +159,8 @@ async function sendTikTokLead(data: LeadSubmission): Promise<ProviderResult> {
         form_name: 'seller_application',
         form_source: data.formSource,
         volume_category: data.volumeCategory,
+        lead_qualification: data.leadQualification,
+        warehouse_interest: data.warehouseInterest,
       },
     }],
   }
@@ -145,12 +194,11 @@ async function sendTikTokLead(data: LeadSubmission): Promise<ProviderResult> {
 }
 
 /**
- * Sends only a stored lead and only after explicit marketing consent. Provider
- * failures never roll back the lead or expose credentials to the browser.
+ * Sends only a validated, stored lead. Browser and server copies share the
+ * same event ID for platform deduplication. Provider failures never roll back
+ * the lead or expose credentials to the browser.
  */
 export async function sendLeadConversions(data: LeadSubmission): Promise<ConversionDelivery> {
-  if (!data.marketingConsent) return { meta: 'skipped', tiktok: 'skipped' }
-
   const [meta, tiktok] = await Promise.allSettled([sendMetaLead(data), sendTikTokLead(data)])
   if (meta.status === 'rejected') console.error('[conversions] Meta delivery failed:', meta.reason)
   if (tiktok.status === 'rejected') console.error('[conversions] TikTok delivery failed:', tiktok.reason)

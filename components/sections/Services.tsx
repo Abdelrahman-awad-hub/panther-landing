@@ -1,15 +1,15 @@
 import { useTranslations } from 'next-intl'
-import { Truck, MapPin, Upload, Wallet, Globe, Split } from 'lucide-react'
+import { Truck, Headset, ScanSearch, RefreshCw, Wallet, MapPin } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
-const icons: LucideIcon[] = [Truck, MapPin, Upload, Wallet, Globe, Split]
+const icons: LucideIcon[] = [Truck, Headset, ScanSearch, RefreshCw, Wallet, MapPin]
 const itemKeys = ['0','1','2','3','4','5'] as const
 
 export function ServicesSection() {
   const t = useTranslations('services')
 
   return (
-    <section id="services" className="bg-white py-24 lg:py-32">
+    <section id="services" className="bg-white py-16 sm:py-24 lg:py-32">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-14">
           <div className="inline-flex items-center bg-panther-red/8 border border-panther-red/20 rounded-full px-4 py-1.5 mb-6">
