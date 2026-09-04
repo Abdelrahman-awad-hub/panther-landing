@@ -28,9 +28,6 @@ export async function POST(request: NextRequest) {
       ...body,
       warehouseInterest,
       leadQualification,
-      // Tracking for this Egypt-focused landing page is initialized on load.
-      // Enforce the server value so stale or forged client consent state
-      // cannot suppress the browser/server conversion pair.
       marketingConsent: true,
       leadId,
       userAgent:   request.headers.get('user-agent') ?? '',
@@ -39,18 +36,34 @@ export async function POST(request: NextRequest) {
     })
 
     if (!result.success) {
+      const errorMessages = result.error.issues.map(issue => `${issue.path.join('.')}: ${issue.message}`).join(', ')
+      console.error('[leads] validation failed:', errorMessages)
       return NextResponse.json(
-        { error: 'Validation failed', issues: result.error.flatten() },
+        { error: 'Validation failed', issues: errorMessages },
         { status: 400 }
       )
     }
 
-    await appendLeadToSheet(result.data)
-    const conversionDelivery = await sendLeadConversions(result.data)
-    console.info('[leads] conversion delivery:', conversionDelivery)
+    try {
+      await appendLeadToSheet(result.data)
+    } catch (sheetError) {
+      console.error('[leads] sheet append failed:', sheetError instanceof Error ? sheetError.message : 'unknown')
+      throw sheetError
+    }
+
+    try {
+      const conversionDelivery = await sendLeadConversions(result.data)
+      console.info('[leads] conversion delivery:', conversionDelivery)
+    } catch (conversionError) {
+      console.error('[leads] conversion delivery failed:', conversionError instanceof Error ? conversionError.message : 'unknown')
+    }
+
     return NextResponse.json({ success: true, leadId })
   } catch (error) {
-    console.error('[leads] submission error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    console.error('[leads] submission error:', error instanceof Error ? error.message : 'unknown')
+    return NextResponse.json(
+      { error: 'Internal server error', details: error instanceof Error ? error.message : 'unknown' },
+      { status: 500 }
+    )
   }
 }

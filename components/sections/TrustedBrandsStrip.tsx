@@ -14,8 +14,8 @@ export function TrustedBrandsStrip() {
         </p>
         <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-5 sm:gap-x-12">
           {logoClients.map((client) => (
-            <div key={client.id} className="relative h-11 w-20 opacity-100 transition-transform duration-200 hover:scale-105 sm:w-24">
-              <Image src={client.logo!} alt={client.name} fill sizes="96px" className="object-contain" />
+            <div key={client.id} className=" opacity-100 transition-transform duration-200 hover:scale-105 sm:w-24">
+              <Image src={client.logo!} alt={client.name} width={200} height={200}  className="object-contain" />
             </div>
           ))}
         </div>
